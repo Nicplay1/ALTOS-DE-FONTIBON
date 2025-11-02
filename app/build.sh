@@ -1,45 +1,50 @@
-#!/usr/bin/env bash
-# build.sh - Script de despliegue para Render o servidores similares
+#!/bin/bash
 
-# 🔹 Instalar dependencias
+# 🔹 Salir si hay un error
+set -e
+
 echo "Instalando dependencias..."
 pip install -r requirements.txt
 
-# 🔹 Ejecutar migraciones
-echo "Aplicando migraciones..."
+echo "Ejecutando migraciones..."
 python manage.py migrate
 
-# 🔹 Crear usuario base (solo si no existe)
-echo "Creando usuario inicial..."
-python manage.py shell <<EOF
-from app.models import Usuario, Rol
+echo "Creando usuario inicial con id_rol = 3..."
+
+# Ejecuta un script Django para crear el usuario
+python manage.py shell << END
+from usuario.models import Usuario, Rol
 from django.db import IntegrityError
 
+# Intentamos obtener el rol 3
 try:
-    # Verifica si existe el rol con id 3
-    rol = Rol.objects.filter(id_rol=3).first()
-    if not rol:
-        rol = Rol.objects.create(id_rol=3, nombre_rol='Usuario Base')
+    rol = Rol.objects.get(id_rol=3)
+except Rol.DoesNotExist:
+    rol = None
+    print("⚠️ El rol con id 3 no existe. Por favor crea primero el rol.")
 
-    # Crea un usuario solo si no existe ese correo
-    if not Usuario.objects.filter(correo='admin@render.com').exists():
-        Usuario.objects.create(
-            nombres='Admin',
-            apellidos='Render',
-            tipo_documento='CC',
-            numero_documento='123456789',
-            correo='admin@render.com',
-            telefono='0000000',
-            celular='0000000000',
-            contraseña='admin123456',
-            id_rol=rol
+if rol:
+    try:
+        usuario, created = Usuario.objects.get_or_create(
+            correo='admin@admin.com',  # Cambia este correo si quieres
+            defaults={
+                'nombres': 'Admin',
+                'apellidos': 'Usuario',
+                'tipo_documento': 'CC',
+                'numero_documento': '1234567890',
+                'telefono': '0000000',
+                'celular': '0000000000',
+                'estado': 'Activo',
+                'contraseña': 'admin123',  # Aquí puedes encriptarla si quieres
+                'id_rol': rol
+            }
         )
-        print("✅ Usuario creado con éxito.")
-    else:
-        print("ℹ️ El usuario ya existe, no se creó uno nuevo.")
+        if created:
+            print("✅ Usuario inicial creado correctamente.")
+        else:
+            print("ℹ️ El usuario ya existe.")
+    except IntegrityError as e:
+        print(f"❌ Error al crear el usuario: {e}")
+END
 
-except IntegrityError as e:
-    print(f"⚠️ Error de integridad: {e}")
-except Exception as e:
-    print(f"⚠️ Error general: {e}")
-EOF
+echo "🔥 Build completado."
