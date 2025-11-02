@@ -218,12 +218,12 @@ class TipoArchivo(models.Model):
 class ArchivoVehiculo(models.Model):
     idArchivo = models.AutoField(primary_key=True, db_column='idArchivo')
     idVehiculo = models.ForeignKey(
-        'vehiculoresidente',
+        'VehiculoResidente',
         on_delete=models.CASCADE,
         db_column='idVehiculo'
     )
     idTipoArchivo = models.ForeignKey(
-        'tipoarchivo',
+        'TipoArchivo',
         on_delete=models.CASCADE,
         db_column='idTipoArchivo'
     )
@@ -320,14 +320,14 @@ class DetallesParqueadero(models.Model):
         choices=[('Visitante', 'Visitante'), ('Residente', 'Residente')]
     )
     id_visitante = models.ForeignKey(
-        'visitante',
+        'Visitante',
         models.DO_NOTHING,
         db_column='id_visitante',
         blank=True,
         null=True
     )
     id_vehiculo_residente = models.ForeignKey(
-        'vehiculoResidente',
+        'VehiculoResidente',
         models.DO_NOTHING,
         db_column='id_vehiculo_residente',
         blank=True,
@@ -338,7 +338,7 @@ class DetallesParqueadero(models.Model):
     hora_salida = models.TimeField(blank=True, null=True)
     pago = models.FloatField(blank=True, null=True)  # nuevo campo para el pago
     id_parqueadero = models.ForeignKey(
-        'parqueadero',
+        'Parqueadero',
         models.DO_NOTHING,
         db_column='id_parqueadero'
     )
@@ -391,7 +391,7 @@ class EntregaCorrespondencia(models.Model):
         related_name='entregas_correspondencia'
     )
     idDetalles_residente = models.ForeignKey(
-        'detalledesidente',  # Asumiendo que tienes un modelo llamado DetalleResidente
+        'DetalleResidente',  # Asumiendo que tienes un modelo llamado DetalleResidente
         on_delete=models.DO_NOTHING,
         db_column='iddetalles_residente',
         related_name='entregas_residente'
@@ -436,7 +436,7 @@ class Novedades(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     
     id_detalle_residente = models.ForeignKey(
-        'detalleResidente',
+        'DetalleResidente',
         on_delete=models.DO_NOTHING,
         db_column='id_detalle_residente',
         null=True,
@@ -444,7 +444,7 @@ class Novedades(models.Model):
     )
     
     id_visitante = models.ForeignKey(
-        'visitante',
+        'Visitante',
         on_delete=models.DO_NOTHING,
         db_column='id_visitante',
         null=True,
@@ -460,7 +460,7 @@ class Novedades(models.Model):
     )
     
     id_usuario = models.ForeignKey(
-        'usuario',
+        'Usuario',
         on_delete=models.DO_NOTHING,
         db_column='id_usuario',
         null=True,
