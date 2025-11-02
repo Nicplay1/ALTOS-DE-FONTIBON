@@ -1,0 +1,55 @@
+/* Header con formulario redondeado */
+.header-form {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 1.5rem; /* Esquinas bien redondeadas */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+
+.table {
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 0; /* Quitamos el border-radius */
+    overflow: hidden;
+}
+
+/* Encabezado negro con texto blanco */
+.table th {
+    background-color: black;
+    color: white;
+}
+
+/* Espaciado al botón */
+.btn-entregar {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+/* Estilo para la X personalizada */
+.btn-close {
+    position: relative;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: none;
+    opacity: 1 !important;
+    filter: none;
+    transition: none;
+}
+.btn-close::before {
+    content: "×";
+    color: rgb(255, 253, 253);
+    font-weight: bold;
+    font-size: 1.7rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+.btn-close:hover::before {
+    transform: translate(-50%, -50%) scale(1.2);
+}
