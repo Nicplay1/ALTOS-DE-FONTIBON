@@ -86,7 +86,7 @@ pymysql.install_as_MySQLdb()
 
 DATABASES = {
     # 🔹 Base de datos local (MySQL)
-    'default': {
+    'default1': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'proyecto_bd',
         'USER': 'root',
@@ -100,11 +100,11 @@ DATABASES = {
     },
 
     # 🔹 Base de datos Render (PostgreSQL)
-    'render': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'proyecto_bd_c4on',
         'USER': 'proyecto_bd_c4on_user',
-        'PASSWORD': 'TU_CONTRASEÑA_DE_RENDER',  # ← pon aquí la contraseña exacta
+        'PASSWORD': 'eV16YhehCwxaSkIWw8MpEHmmNvVtKC8G',  # ← pon aquí la contraseña exacta
         'HOST': 'dpg-d43t4rili9vc73dfutn0-a',
         'PORT': '5432',
         'OPTIONS': {
@@ -112,6 +112,7 @@ DATABASES = {
         }
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
