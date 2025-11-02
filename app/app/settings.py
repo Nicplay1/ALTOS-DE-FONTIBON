@@ -83,17 +83,32 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 import pymysql
 pymysql.install_as_MySQLdb()
+
 DATABASES = {
+    # 🔹 Base de datos local (MySQL)
     'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Motor de base de datos
-        'NAME': 'proyecto_bd',                   # Nombre de la base de datos
-        'USER': 'root',                        # Usuario de MySQL
-        'PASSWORD': '',                        # Contraseña de MySQL
-        'HOST': 'localhost',                   # Servidor de base de datos
-        'PORT': '3306',                         # Puerto (3306 por defecto)
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'proyecto_bd',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
+    },
+
+    # 🔹 Base de datos Render (PostgreSQL)
+    'render': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'proyecto_bd_c4on',
+        'USER': 'proyecto_bd_c4on_user',
+        'PASSWORD': 'TU_CONTRASEÑA_DE_RENDER',  # ← pon aquí la contraseña exacta
+        'HOST': 'dpg-d43t4rili9vc73dfutn0-a',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require'
         }
     }
 }
