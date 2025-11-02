@@ -19,8 +19,8 @@ class Migration(migrations.Migration):
                 ('fechaVencimiento', models.DateField(blank=True, db_column='fechaVencimiento', null=True)),
             ],
             options={
-                'db_table': 'ArchivoVehiculo',
-                'managed': False,
+                'db_table': 'archivo_vehiculo',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -31,8 +31,8 @@ class Migration(migrations.Migration):
                 ('fecha_ganador', models.DateField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'GanadorSorteo',
-                'managed': False,
+                'db_table': 'ganador_sorteo',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -44,8 +44,8 @@ class Migration(migrations.Migration):
                 ('fecha_publicacion', models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'Noticias',
-                'managed': False,
+                'db_table': 'noticias',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -58,8 +58,8 @@ class Migration(migrations.Migration):
                 ('hora_sorteo', models.TimeField()),
             ],
             options={
-                'db_table': 'Sorteo',
-                'managed': False,
+                'db_table': 'sorteo',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
                 ('tipo_documento', models.CharField(choices=[('SOAT', 'SOAT'), ('Tarjeta de propiedad', 'Tarjeta de propiedad'), ('Técnico-mecánica', 'Técnico-mecánica'), ('Licencia', 'Licencia'), ('Identidad', 'Identidad')], max_length=50)),
             ],
             options={
-                'db_table': 'TipoArchivo',
+                'db_table': 'tipoarchivo',
                 'managed': False,
             },
         ),
@@ -94,7 +94,7 @@ class Migration(migrations.Migration):
                 ('documentos', models.BooleanField(default=True)),
             ],
             options={
-                'db_table': 'Vehiculo_residente',
+                'db_table': 'vehiculo_residente',
                 'managed': False,
             },
         ),

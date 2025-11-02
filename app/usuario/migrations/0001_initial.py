@@ -20,8 +20,8 @@ class Migration(migrations.Migration):
                 ('torre', models.IntegerField()),
             ],
             options={
-                'db_table': 'Detalle_residente',
-                'managed': False,
+                'db_table': 'detalle_residente',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -37,8 +37,8 @@ class Migration(migrations.Migration):
                 ('forma_pago', models.CharField(choices=[('Transferencia', 'Transferencia'), ('Efectivo', 'Efectivo')], max_length=20)),
             ],
             options={
-                'db_table': 'Reserva',
-                'managed': False,
+                'db_table': 'reserva',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -48,8 +48,8 @@ class Migration(migrations.Migration):
                 ('nombre_rol', models.CharField(max_length=50)),
             ],
             options={
-                'db_table': 'Rol',
-                'managed': False,
+                'db_table': 'rol',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -67,8 +67,8 @@ class Migration(migrations.Migration):
                 ('contraseña', models.CharField(blank=True, max_length=250, null=True)),
             ],
             options={
-                'db_table': 'Usuario',
-                'managed': False,
+                'db_table': 'usuario',
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -81,8 +81,8 @@ class Migration(migrations.Migration):
                 ('estado', models.BooleanField(default=True)),
             ],
             options={
-                'db_table': 'Zona_comun',
-                'managed': False,
+                'db_table': 'zona_comun',
+                'managed': True,
             },
         ),
     ]
