@@ -4,13 +4,16 @@ set -o errexit
 echo "🚀 Instalando dependencias..."
 pip install -r requirements.txt
 
-echo "⚙️ Limpiando migraciones viejas..."
-python manage.py migrate usuario zero --noinput
-python manage.py migrate vigilante zero --noinput
-python manage.py migrate residente zero --noinput
-python manage.py migrate administrador zero --noinput
+echo "⚙️ Limpiando base de datos..."
+python manage.py migrate --fake usuario zero --noinput
+python manage.py migrate --fake vigilante zero --noinput
+python manage.py migrate --fake residente zero --noinput
+python manage.py migrate --fake administrador zero --noinput
 
-echo "🧩 Volviendo a crear migraciones..."
+echo "🧩 Borrando registros antiguos de migraciones..."
+python manage.py migrate --fake-initial --noinput
+
+echo "🧱 Recreando migraciones..."
 python manage.py makemigrations
 python manage.py migrate --noinput
 
