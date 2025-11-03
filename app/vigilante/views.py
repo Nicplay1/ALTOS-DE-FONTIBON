@@ -324,17 +324,17 @@ def registrar_entrega_view(request):
     if request.method == "POST":
         # Registrar entrega
         if request.POST.get("accion") == "registrar_entrega":
-            id_corres = request.POST.get("id_correspondencia")
-            id_res = request.POST.get("id_residente")
-            residente = get_object_or_404(DetalleResidente, id_detalle_residente=id_res)
-            correspondencia = get_object_or_404(RegistroCorrespondencia, id_correspondencia=id_corres)
+            id_correspondencia = request.POST.get("id_correspondencia")
+            id_residente = request.POST.get("id_residente")
+            residente = get_object_or_404(DetalleResidente, id_detalle_residente=id_residente)
+            correspondencia = get_object_or_404(RegistroCorrespondencia, id_correspondencia=id_correspondencia)
 
-            if not EntregaCorrespondencia.objects.filter(idDetalles_residente=residente, idCorrespondecia=correspondencia).exists():
+            if not EntregaCorrespondencia.objects.filter(id_detalle_residente=residente, id_correspondencia=correspondencia).exists():
                 EntregaCorrespondencia.objects.create(
-                    idUsuario=request.usuario,
-                    idCorrespondecia=correspondencia,
-                    idDetalles_residente=residente,
-                    fechaEntrega=timezone.now()
+                    id_usuario=request.usuario,
+                    id_correspondencia=correspondencia,
+                    id_detalle_residente=residente,
+                    fecha_entrega=timezone.now()
                 )
             return JsonResponse({'success': True})
 
@@ -349,8 +349,8 @@ def registrar_entrega_view(request):
 
             registros = []
             if residente:
-                entregas_residente = EntregaCorrespondencia.objects.filter(idDetalles_residente=residente)
-                entregados_ids = entregas_residente.values_list('idCorrespondecia_id', flat=True)
+                entregas_residente = EntregaCorrespondencia.objects.filter(id_detalle_residente=residente)
+                entregados_ids = entregas_residente.values_list('id_correspondencia_id', flat=True)
                 registros = RegistroCorrespondencia.objects.exclude(id_correspondencia__in=entregados_ids)
 
             html = render_to_string('vigilante/correspondecia/partial_registros.html', {

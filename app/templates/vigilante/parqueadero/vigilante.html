@@ -116,7 +116,6 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            
                             <th>Nombre</th>
                             <th>Placa</th>
                             <th>Parqueadero</th>
@@ -130,7 +129,6 @@
                     <tbody>
                     {% for detalle in registros %}
                         <tr>
-                           
                             <td>
                                 {% if detalle.id_visitante %}
                                     {{ detalle.id_visitante.nombres }} {{ detalle.id_visitante.apellidos }}
@@ -155,7 +153,7 @@
                                     -
                                 {% endif %}
                             </td>
-                            <td>{{ detalle.valor_pago|default:"0" }}</td>
+                            <td>{{ detalle.pago|default:"0" }}</td>
                             <td>
                                 {% if detalle.tipo_propietario == "Visitante" %}
                                     {% if not detalle.hora_salida %}
@@ -276,15 +274,13 @@
                     <div>{{ message }}</div>
                 </div>
             {% endfor %}
-
         {% endif %}
     </div>
-
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
-<!-- JavaScript externo -->
+    <!-- JavaScript externo -->
     <script src="{% static 'js/vigilante/parqueadero/vigilante.js' %}"></script>
 </body>
 </html>

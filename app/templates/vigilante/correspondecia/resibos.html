@@ -1,4 +1,3 @@
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
@@ -120,7 +119,7 @@
                             <td>{{ registro.tipo }}</td>
                             <td>{{ registro.descripcion }}</td>
                             <td>{{ registro.fecha_registro }}</td>
-                            <td>{{ registro.cod_vigilante }}</td>
+                            <td>{{ registro.cod_vigilante.nombres }} {{ registro.cod_vigilante.apellidos }}</td>
                         </tr>
                         {% empty %}
                         <tr>

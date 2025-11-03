@@ -210,13 +210,13 @@ def lista_vehiculos(request):
 @login_requerido
 def detalle_vehiculo(request, pk):
     vehiculo = get_object_or_404(VehiculoResidente, pk=pk)
-    archivos = ArchivoVehiculo.objects.filter(idVehiculo=vehiculo)
+    archivos = ArchivoVehiculo.objects.filter(id_vehiculo=vehiculo)
 
     documentos_requeridos = ['SOAT', 'Tarjeta de propiedad', 'Técnico-mecánica', 'Licencia', 'Identidad']
     documentos_subidos = ArchivoVehiculo.objects.filter(
-        idVehiculo=vehiculo,
-        idTipoArchivo__tipo_documento__in=documentos_requeridos
-    ).values_list('idTipoArchivo__tipo_documento', flat=True).distinct()
+        id_vehiculo=vehiculo,
+        id_tipo_archivo__tipo_documento__in=documentos_requeridos
+    ).values_list('id_tipo_archivo__tipo_documento', flat=True).distinct()
     tiene_todos = set(documentos_requeridos).issubset(set(documentos_subidos))
 
     proceso = ProcesoValidacion.objects.first()
@@ -270,9 +270,9 @@ def activar_validacion(request):
 
     for vehiculo in vehiculos:
         documentos_subidos = ArchivoVehiculo.objects.filter(
-            idVehiculo=vehiculo,
-            idTipoArchivo__tipo_documento__in=documentos_requeridos
-        ).values_list('idTipoArchivo__tipo_documento', flat=True).distinct()
+            id_vehiculo=vehiculo,
+            id_tipo_archivo__tipo_documento__in=documentos_requeridos
+        ).values_list('id_tipo_archivo__tipo_documento', flat=True).distinct()
         
         tiene_todos = set(documentos_requeridos).issubset(set(documentos_subidos))
         

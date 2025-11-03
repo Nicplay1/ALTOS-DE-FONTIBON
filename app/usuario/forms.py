@@ -54,15 +54,15 @@ class RegisterForm(forms.ModelForm):
             }),
             'numero_documento': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su número de documento'
+                'placeholder': 'Ingrese su número_documento'
             }),
             'correo': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su correo electrónico'
+                'placeholder': 'Ingrese su correo'
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su teléfono'
+                'placeholder': 'Ingrese su telefono'
             }),
             'celular': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -82,8 +82,6 @@ class RegisterForm(forms.ModelForm):
         return cleaned_data
 
 
-
-
 class LoginForm(forms.Form):
     numero_documento = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control'}),
@@ -94,8 +92,8 @@ class LoginForm(forms.Form):
         label="Contraseña"
     )
 
+
 class UsuarioUpdateForm(forms.ModelForm):
-    # contraseña no es obligatoria
     contraseña = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         required=False

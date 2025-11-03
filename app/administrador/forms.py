@@ -5,14 +5,14 @@ from usuario.models import *
 class CambiarRolForm(forms.ModelForm):
     class Meta:
         model = Usuario
-        fields = ['id_rol']
+        fields = ['id_rol']  # Se mantiene el nombre exacto del campo
         labels = {'id_rol': 'Rol'}
 
 
 class EditarReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
-        fields = ["observacion", "estado"]
+        fields = ["observacion", "estado"]  # Nombres exactos
         labels = {
             "observacion": "Observación",
             "estado": "Estado"
@@ -26,10 +26,11 @@ class EditarReservaForm(forms.ModelForm):
             "estado": forms.Select(attrs={"class": "form-select-modern"})
         }
 
+
 class NoticiasForm(forms.ModelForm):
     class Meta:
         model = Noticias
-        fields = ['titulo', 'descripcion']
+        fields = ['titulo', 'descripcion']  # Nombres exactos
         widgets = {
             'titulo': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -41,30 +42,31 @@ class NoticiasForm(forms.ModelForm):
                 'placeholder': 'Ingrese la descripción'
             }),
         }
-        
+
+
 class VehiculoResidenteForm(forms.ModelForm):
     class Meta:
         model = VehiculoResidente
-        fields = ['documentos']
+        fields = ['documentos']  # Campo exacto
         widgets = {
             'documentos': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Help text informativo
         self.fields['documentos'].help_text = "Estado manual de validación. Sobrescribe la validación automática."
+
 
 class SorteoForm(forms.ModelForm):
     tipo_residente_propietario = forms.BooleanField(
-        required=False,  # Permite que quede vacío (null)
+        required=False,  # Permite null
         label='Propietario',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
     class Meta:
         model = Sorteo
-        fields = ['tipo_residente_propietario', 'fecha_inicio', 'hora_sorteo']
+        fields = ['tipo_residente_propietario', 'fecha_inicio', 'hora_sorteo']  # Campos exactos
         widgets = {
             'fecha_inicio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'hora_sorteo': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
@@ -73,18 +75,18 @@ class SorteoForm(forms.ModelForm):
             'fecha_inicio': 'Fecha de Inicio',
             'hora_sorteo': 'Hora del Sorteo',
         }
-        
-        def clean_fecha_creado(self):
-            fecha = self.cleaned_data.get('fecha_creado')
-            if fecha < timezone.now().date():
-                raise forms.ValidationError("No puedes seleccionar una fecha pasada.")
-            return fecha
-        
+
+    def clean_fecha_inicio(self):
+        fecha = self.cleaned_data.get('fecha_inicio')
+        if fecha < timezone.now().date():
+            raise forms.ValidationError("No puedes seleccionar una fecha pasada.")
+        return fecha
+
 
 class EstadoPagoForm(forms.ModelForm):
     class Meta:
         model = PagosReserva
-        fields = ["estado"]
+        fields = ["estado"]  # Campo exacto
         widgets = {
             "estado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }

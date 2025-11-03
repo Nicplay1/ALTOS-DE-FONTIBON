@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from usuario.models import *
 from usuario.decorators import *
 from .forms import *
@@ -23,20 +23,21 @@ def noticias(request):
     """
     Vista para mostrar las noticias del panel de residente.
     """
-    noticias = Noticias.objects.all().order_by('-fecha_publicacion')  # Más recientes primero
+    noticias_list = Noticias.objects.all().order_by('-fecha_publicacion')  # Más recientes primero
 
     context = {
         'detalle': True,  # Esto habilita la sección de noticias en tu template
-        'noticias': noticias
+        'noticias': noticias_list
     }
 
-    return render(request, 'residente/detalles_residente/noticias.html', context)  # Reemplaza 'nombre_template.html' por el nombre real de tu template
+    return render(request, 'residente/detalles_residente/noticias.html', context)
+
 
 @rol_requerido([2])
 @login_requerido
 def detalle_residente(request):
-    usuario = request.usuario
-    detalle = DetalleResidente.objects.filter(cod_usuario=usuario).first()
+    usuario_actual = request.usuario
+    detalle = DetalleResidente.objects.filter(cod_usuario=usuario_actual).first()
 
     if detalle:
         return redirect("panel_residente")
@@ -44,13 +45,12 @@ def detalle_residente(request):
     if request.method == "POST":
         form = DetalleResidenteForm(request.POST)
         if form.is_valid():
-            detalle = form.save(commit=False)
-            detalle.cod_usuario = usuario
-            detalle.save()
+            detalle_obj = form.save(commit=False)
+            detalle_obj.cod_usuario = usuario_actual
+            detalle_obj.save()
             messages.success(request, "Detalles de residente registrados correctamente.")
             return redirect("panel_residente")
         else:
-            # Mostrar errores del formulario en mensajes
             for error in form.non_field_errors():
                 messages.error(request, error)
     else:
@@ -61,8 +61,6 @@ def detalle_residente(request):
         "residente/detalles_residente/registrar_detalle_residente.html",
         {"form": form}
     )
-    
-
 
 
 @rol_requerido([2])
@@ -86,7 +84,6 @@ def crear_reserva(request, id_zona):
             hora_inicio = form.cleaned_data['hora_inicio']
             hora_fin = form.cleaned_data['hora_fin']
 
-            # 🔹 1. Validación de fecha pasada
             if fecha_uso < datetime.date.today():
                 messages.error(request, "No puedes seleccionar una fecha que ya pasó.")
                 return render(request, "residente/zonas_comunes/crear_reserva.html", {
@@ -94,19 +91,15 @@ def crear_reserva(request, id_zona):
                     "zona": zona
                 })
 
-            # 🔹 2. Validación de fecha ocupada solo para zonas 6, 12 y 13
             if zona.id_zona in [6, 12, 13] and Reserva.objects.filter(cod_zona=zona, fecha_uso=fecha_uso).exists():
                 messages.error(request, "Ya existe una reserva para esta fecha en la zona seleccionada.")
             else:
-                reserva = form.save(commit=False)
-                reserva.cod_usuario = request.usuario
-                reserva.cod_zona = zona
-                reserva.estado = "En espera"
-                reserva.forma_pago = "Efectivo"
+                reserva_obj = form.save(commit=False)
+                reserva_obj.cod_usuario = request.usuario
+                reserva_obj.cod_zona = zona
+                reserva_obj.estado = "En espera"
+                reserva_obj.forma_pago = "Efectivo"
 
-                # ----------------------------
-                # 🔹 CÁLCULO DEL PAGO
-                # ----------------------------
                 total_a_pagar = 0
 
                 if hora_inicio and hora_fin:
@@ -121,18 +114,16 @@ def crear_reserva(request, id_zona):
 
                     if zona.tipo_pago == "Por hora":
                         total_a_pagar = (duracion_minutos / 60) * float(zona.tarifa_base)
-
                     elif zona.tipo_pago == "Franja horaria":
                         franja_minutos = 60
                         if zona.nombre_zona == "Lavandería":
                             franja_minutos = 90
                         total_a_pagar = (duracion_minutos / franja_minutos) * float(zona.tarifa_base)
-
                     elif zona.tipo_pago == "Evento":
                         total_a_pagar = float(zona.tarifa_base)
 
-                reserva.valor_pago = total_a_pagar
-                reserva.save()
+                reserva_obj.valor_pago = total_a_pagar
+                reserva_obj.save()
 
                 messages.success(request, f"Reserva creada correctamente. Total a pagar: ${total_a_pagar:,.0f}")
                 request.session["mostrar_alerta_pago"] = True
@@ -141,8 +132,7 @@ def crear_reserva(request, id_zona):
             for field, errors in form.errors.items():
                 for error in errors:
                     if field == "__all__":
-                        messages.error(request, error)  # Mostrar solo el texto limpio
-
+                        messages.error(request, error)
 
     else:
         form = ReservaForm()
@@ -152,16 +142,16 @@ def crear_reserva(request, id_zona):
         "zona": zona
     })
 
+
 @rol_requerido([2])
 @login_requerido
 def fechas_ocupadas(request, id_zona):
     zona = get_object_or_404(ZonaComun, pk=id_zona)
 
-    # Solo marcar "ocupado" si la zona pertenece a los ids 6, 12 o 13
     if zona.id_zona in [6, 12, 13]:
         reservas = Reserva.objects.filter(cod_zona=zona).values_list("fecha_uso", flat=True)
     else:
-        reservas = []  # las demás zonas siempre aparecen libres
+        reservas = []
 
     return JsonResponse({"fechas": list(reservas)})
 
@@ -169,28 +159,20 @@ def fechas_ocupadas(request, id_zona):
 @rol_requerido([2])
 @login_requerido
 def mis_reservas(request):
-    # 🔹 Obtener el usuario autenticado desde el decorador
-    usuario = request.usuario
+    usuario_actual = request.usuario
 
-    # 🔹 Obtener todas las reservas del usuario y ordenarlas por fecha de creación
-    reservas = Reserva.objects.filter(cod_usuario=usuario)\
+    reservas = Reserva.objects.filter(cod_usuario=usuario_actual)\
                               .select_related("cod_zona")\
                               .order_by("-fecha_reserva")
 
-    # 🔹 Revisar si hay que mostrar alerta de pago
     mostrar_alerta = request.session.pop("mostrar_alerta_pago", False)
 
-    # 🔹 Calcular mañana
     manana = date.today() + timedelta(days=1)
-
-    # 🔹 Filtrar reservas que sean para mañana
     reservas_manana = reservas.filter(fecha_uso=manana)
 
-    # 🔹 Enviar correo de recordatorio solo si hay reservas para mañana
     if reservas_manana.exists():
         clave_sesion_correo = f"correo_enviado_{manana.isoformat()}"
         if not request.session.get(clave_sesion_correo, False):
-            # Construir cuerpo del correo
             cuerpo = "Hola,\n\nRecuerda que mañana tienes las siguientes reservas:\n\n"
             for r in reservas_manana:
                 cuerpo += (
@@ -199,19 +181,16 @@ def mis_reservas(request):
                 )
             cuerpo += "\n¡Gracias por usar nuestro sistema!\n"
 
-            # Enviar correo
             send_mail(
                 subject="Recordatorio de reservas para mañana",
                 message=cuerpo,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[usuario.correo],
-                fail_silently=True,  # ⚠️ Cambiar a False en desarrollo si quieres depurar
+                recipient_list=[usuario_actual.correo],
+                fail_silently=True,
             )
 
-            # Marcar en la sesión que ya se envió
             request.session[clave_sesion_correo] = True
 
-    # 🔹 Renderizar plantilla con todas las reservas del usuario
     return render(
         request,
         "residente/zonas_comunes/detalle_reserva.html",
@@ -220,71 +199,63 @@ def mis_reservas(request):
             "mostrar_alerta": mostrar_alerta,
         }
     )
-  
+
 
 @rol_requerido([2])
 @login_requerido
 def eliminar_reserva(request, id_reserva):
-    reserva = get_object_or_404(Reserva, pk=id_reserva)
+    reserva_obj = get_object_or_404(Reserva, pk=id_reserva)
 
-    # Validar permisos: si es residente, solo puede eliminar sus propias reservas
-    if request.usuario.id_rol.id_rol == 2 and reserva.cod_usuario != request.usuario:
+    if request.usuario.id_rol.id_rol == 2 and reserva_obj.cod_usuario != request.usuario:
         messages.error(request, "No puedes eliminar esta reserva.")
         return redirect("mis_reservas")
 
-    # 🚫 No permitir eliminar si ya está actualizada (aprobada o rechazada)
-    if reserva.estado != "En espera":
-        messages.error(request, f"No puedes eliminar la reserva {id_reserva} porque ya fue {reserva.estado.lower()}.")
+    if reserva_obj.estado != "En espera":
+        messages.error(request, f"No puedes eliminar la reserva {id_reserva} porque ya fue {reserva_obj.estado.lower()}.")
         if request.usuario.id_rol.id_rol == 3:
             return redirect("gestionar_reservas")
         return redirect("mis_reservas")
 
     if request.method == "POST":
-        reserva.delete()
+        reserva_obj.delete()
         messages.success(request, f"Reserva {id_reserva} eliminada correctamente.")
 
-        if request.usuario.id_rol.id_rol == 3:  # Admin
+        if request.usuario.id_rol.id_rol == 3:
             return redirect("gestionar_reservas")
         return redirect("mis_reservas")
 
-    # Si alguien intenta entrar por GET
     messages.error(request, "Operación no permitida.")
     if request.usuario.id_rol.id_rol == 3:
         return redirect("gestionar_reservas")
     return redirect("mis_reservas")
 
-    
 
 @rol_requerido([2])
 @login_requerido
-def detalles(request, vehiculo_id):
-    # Obtener el vehículo y sus archivos
-    vehiculo = get_object_or_404(VehiculoResidente, pk=vehiculo_id)
+def detalles(request, id_vehiculo_residente):
+    vehiculo = get_object_or_404(VehiculoResidente, pk=id_vehiculo_residente)
     archivos = ArchivoVehiculo.objects.filter(id_vehiculo=vehiculo)
     
-    # IDs de tipos de archivo existentes (para deshabilitar opciones en el select si quieres)
     archivos_ids = [archivo.id_tipo_archivo.pk for archivo in archivos]
 
     if request.method == 'POST':
         tipo_archivo_id = request.POST.get('id_tipo_archivo')
         archivo_existente = archivos.filter(id_tipo_archivo_id=tipo_archivo_id).first()
 
-        # Usar instancia para actualizar si existe, o crear nuevo
         form = ArchivoVehiculoForm(request.POST, request.FILES, instance=archivo_existente)
 
         if form.is_valid():
             archivo_obj = form.save(commit=False)
-            archivo_obj.id_vehiculo = vehiculo  # 🔹 Campo corregido
+            archivo_obj.id_vehiculo = vehiculo
 
-            # Validar fecha de vencimiento
             fecha_venc = form.cleaned_data.get('fecha_vencimiento')
             if fecha_venc and fecha_venc < now().date():
-                messages.error(request, " La fecha de vencimiento no puede ser anterior a hoy.")
+                messages.error(request, "La fecha de vencimiento no puede ser anterior a hoy.")
             else:
                 archivo_obj.save()
                 accion = "actualizado" if archivo_existente else "registrado"
-                messages.success(request, f" Archivo '{archivo_obj.id_tipo_archivo}' {accion} correctamente.")
-                return redirect('detalles', vehiculo_id=vehiculo.id_vehiculo_residente)
+                messages.success(request, f"Archivo '{archivo_obj.id_tipo_archivo}' {accion} correctamente.")
+                return redirect('detalles', id_vehiculo_residente=vehiculo.id_vehiculo_residente)
     else:
         form = ArchivoVehiculoForm()
 
@@ -295,35 +266,32 @@ def detalles(request, vehiculo_id):
         'archivos_ids_json': archivos_ids
     }
     return render(request, 'residente/vehiculos/detalles.html', context)
-  
-  
-    
+
+
 @rol_requerido([2])
 @login_requerido
 def agregar_pago(request, id_reserva):
-    reserva = get_object_or_404(Reserva, pk=id_reserva)
-    pago_actual = PagosReserva.objects.filter(id_reserva=reserva).order_by("-id_pago").first()
+    reserva_obj = get_object_or_404(Reserva, pk=id_reserva)
+    pago_actual = PagosReserva.objects.filter(id_reserva=reserva_obj).order_by("-id_pago").first()
 
     form = None
     editar_pago_id = request.GET.get("editar_pago")
 
     if editar_pago_id:
-        pago_editar = get_object_or_404(PagosReserva, pk=editar_pago_id, id_reserva=reserva)
+        pago_editar = get_object_or_404(PagosReserva, pk=editar_pago_id, id_reserva=reserva_obj)
     else:
         pago_editar = None
 
-    # Guardar edición desde el modal
     if request.method == "POST" and "guardar_edicion" in request.POST:
-        pago_editar = get_object_or_404(PagosReserva, pk=request.POST.get("pago_id"), id_reserva=reserva)
+        pago_editar = get_object_or_404(PagosReserva, pk=request.POST.get("pago_id"), id_reserva=reserva_obj)
         form = PagosReservaForm(request.POST, request.FILES, instance=pago_editar)
         if form.is_valid():
             form.save()
             messages.success(request, "El comprobante se actualizó correctamente.")
-            return redirect("agregar_pago", id_reserva=reserva.id_reserva)
+            return redirect("agregar_pago", id_reserva=reserva_obj.id_reserva)
         else:
             messages.error(request, "Ocurrió un error al actualizar el comprobante.")
 
-    # Crear nuevo pago
     elif request.method == "POST":
         if pago_actual and not pago_actual.estado and not pago_actual.archivo_2:
             form = PagosReservaForm(request.POST, request.FILES, instance=pago_actual)
@@ -332,17 +300,16 @@ def agregar_pago(request, id_reserva):
                 pago.estado = False
                 pago.save()
                 request.session["mostrar_alerta"] = "validando_pago"
-                return redirect("agregar_pago", id_reserva=reserva.id_reserva)
+                return redirect("agregar_pago", id_reserva=reserva_obj.id_reserva)
         else:
             form = PagosReservaForm(request.POST, request.FILES)
             if form.is_valid():
                 pago = form.save(commit=False)
-                pago.id_reserva = reserva
+                pago.id_reserva = reserva_obj
                 pago.estado = False
                 pago.save()
                 request.session["mostrar_alerta"] = "primer_pago"
-                return redirect("agregar_pago", id_reserva=reserva.id_reserva)
-
+                return redirect("agregar_pago", id_reserva=reserva_obj.id_reserva)
     else:
         if pago_editar:
             form = PagosReservaForm(instance=pago_editar)
@@ -357,14 +324,12 @@ def agregar_pago(request, id_reserva):
         elif pago_actual and pago_actual.estado:
             form = None
         else:
-            form = PagosReservaForm(initial={"id_reserva": reserva.id_reserva})
+            form = PagosReservaForm(initial={"id_reserva": reserva_obj.id_reserva})
             form.fields["archivo_2"].widget = forms.HiddenInput()
             form.fields["estado"].widget = forms.HiddenInput()
             form.fields["id_reserva"].widget = forms.HiddenInput()
 
-    # 👇 Solo pagos de la reserva actual
-    pagos = PagosReserva.objects.filter(id_reserva=reserva).order_by("-id_pago")
-
+    pagos = PagosReserva.objects.filter(id_reserva=reserva_obj).order_by("-id_pago")
     mostrar_alerta = request.session.pop("mostrar_alerta", None)
 
     return render(
@@ -372,7 +337,7 @@ def agregar_pago(request, id_reserva):
         "residente/zonas_comunes/pago_reserva.html",
         {
             "form": form,
-            "reserva": reserva,
+            "reserva": reserva_obj,
             "pagos": pagos,
             "pago_actual": pago_actual,
             "pago_editar": pago_editar,
@@ -390,14 +355,12 @@ def lista_sorteos(request):
         messages.error(request, "Debes iniciar sesión para ver tus sorteos.")
         return redirect('login')
 
-    # Verificar si el usuario es propietario o arrendatario
     detalle_residente = DetalleResidente.objects.filter(cod_usuario=usuario_logueado).first()
 
     if not detalle_residente:
         messages.error(request, "No tienes un detalle de residente registrado.")
         return redirect('detalle_residente')
 
-    # 🔹 Filtrar sorteos según el tipo de residente
     if detalle_residente.propietario is True:
         sorteos = Sorteo.objects.filter(tipo_residente_propietario=True).order_by('-fecha_inicio')
     elif detalle_residente.propietario is False:
@@ -405,7 +368,6 @@ def lista_sorteos(request):
     else:
         sorteos = Sorteo.objects.all().order_by('-fecha_inicio')
 
-    # 🔹 Verificar participación y si ganó en cada sorteo
     sorteos_info = []
     for sorteo in sorteos:
         participa = VehiculoResidente.objects.filter(
@@ -434,21 +396,16 @@ def lista_sorteos(request):
 
 @rol_requerido([2])
 @login_requerido
-def detalle_sorteo(request, sorteo_id):
-    # Obtener el sorteo
-    sorteo = get_object_or_404(Sorteo, id_sorteo=sorteo_id)
-
-    # Usuario logueado desde el decorador
+def detalle_sorteo(request, id_sorteo):
+    sorteo = get_object_or_404(Sorteo, id_sorteo=id_sorteo)
     usuario_logueado = getattr(request, 'usuario', None)
 
-    # Verificar si el usuario tiene vehículo válido
     vehiculo = VehiculoResidente.objects.filter(
         cod_usuario=usuario_logueado,
         documentos=True
     ).first()
     tiene_vehiculo = vehiculo is not None
 
-    # Verificar si el usuario participó en este sorteo
     participo = DetalleResidente.objects.filter(
         cod_usuario=usuario_logueado
     ).exists() and tiene_vehiculo
@@ -456,7 +413,7 @@ def detalle_sorteo(request, sorteo_id):
     gano = False
     parqueadero = None
 
-    if sorteo.estado:  # 🔹 Solo verificar ganador si el sorteo ya se realizó
+    if sorteo.estado:
         ganador = GanadorSorteo.objects.filter(
             id_sorteo=sorteo,
             id_detalle_residente__cod_usuario=usuario_logueado
@@ -465,15 +422,14 @@ def detalle_sorteo(request, sorteo_id):
         gano = ganador is not None
         parqueadero = ganador.id_parqueadero if ganador else None
 
-    # Determinar mensaje según estado y participación
     if not participo:
-        mensaje = " No participaste en este sorteo porque no tienes un vehículo válido."
+        mensaje = "No participaste en este sorteo porque no tienes un vehículo válido."
     elif not sorteo.estado:
-        mensaje = " Este sorteo aún no se ha realizado."
+        mensaje = "Este sorteo aún no se ha realizado."
     elif gano:
-        mensaje = " ¡Felicidades! Ganaste en este sorteo."
+        mensaje = "¡Felicidades! Ganaste en este sorteo."
     else:
-        mensaje = " Participaste, pero no ganaste en este sorteo."
+        mensaje = "Participaste, pero no ganaste en este sorteo."
 
     context = {
         "sorteo": sorteo,
@@ -485,4 +441,3 @@ def detalle_sorteo(request, sorteo_id):
         "mensaje": mensaje
     }
     return render(request, "residente/sorteo/detalle_sorteo.html", context)
-

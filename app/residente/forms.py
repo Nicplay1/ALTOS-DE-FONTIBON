@@ -82,7 +82,7 @@ class VehiculoResidenteForm(forms.ModelForm):
         if not re.match(r'^[A-Z0-9]+$', placa):
             raise ValidationError("La placa solo puede contener letras y números.")
 
-        existente = VehiculoResidente.objects.filter(placa__iexact=placa).exclude(pk=getattr(self.instance, 'pk', None))
+        existente = VehiculoResidente.objects.filter(placa__iexact=placa).exclude(pk=getattr(self.instance, 'id_vehiculo_residente', None))
         if existente.exists():
             raise ValidationError("La placa ya está registrada por otro usuario.")
 

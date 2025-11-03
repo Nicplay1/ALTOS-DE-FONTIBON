@@ -6,7 +6,7 @@ from datetime import date
 
 class BuscarPlacaForm(forms.Form):
     placa = forms.CharField(
-        max_length=10,
+        max_length=7,
         label="Buscar Placa",
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -43,7 +43,7 @@ class VisitanteForm(forms.ModelForm):
         }
 
 
-class DetalleParqueaderoForm(forms.ModelForm):
+class DetallesParqueaderoForm(forms.ModelForm):
     class Meta:
         model = DetallesParqueadero
         fields = ['tipo_propietario', 'hora_salida', 'id_parqueadero']
@@ -52,7 +52,6 @@ class DetalleParqueaderoForm(forms.ModelForm):
             'hora_salida': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'id_parqueadero': forms.Select(attrs={'class': 'form-control'}),
         }
-        
 
 
 class RegistroCorrespondenciaForm(forms.ModelForm):
@@ -61,35 +60,30 @@ class RegistroCorrespondenciaForm(forms.ModelForm):
         fields = ['tipo', 'descripcion', 'fecha_registro', 'cod_vigilante']
         widgets = {
             'fecha_registro': forms.DateInput(
-                attrs={'type': 'date', 'class': 'form-control'}  # Solo fecha
+                attrs={'type': 'date', 'class': 'form-control'}
             ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Mostrar "Recibo" pero que no sea editable
         self.fields['tipo'].initial = 'Recibo'
         self.fields['tipo'].disabled = True
         self.fields['tipo'].widget.attrs.update({'class': 'form-control'})
 
-        # Establecer fecha actual por defecto
         self.fields['fecha_registro'].initial = date.today()
 
-        # Agregar clase form-control a los otros campos
         for field_name, field in self.fields.items():
             if field_name not in ['tipo', 'fecha_registro']:
                 field.widget.attrs['class'] = 'form-control'
 
-        # Filtrar cod_vigilante
         self.fields['cod_vigilante'].queryset = Usuario.objects.filter(id_rol=4)
+
 
 class BuscarResidenteForm(forms.Form):
     apartamento = forms.IntegerField(label="Apartamento", widget=forms.NumberInput(attrs={'class': 'form-control'}))
     torre = forms.IntegerField(label="Torre", widget=forms.NumberInput(attrs={'class': 'form-control'}))
 
-    
-    
 
 class RegistrarPaqueteForm(forms.Form):
     apartamento = forms.IntegerField(
@@ -134,7 +128,6 @@ class EntregaPaqueteForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control-modern'}),
         label="Vigilante que Entrega"
     )
-
 
 
 TIPO_CHOICES = (
