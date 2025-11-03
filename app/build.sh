@@ -6,6 +6,7 @@ pip install -r requirements.txt
 
 echo "⚙️ Aplicando migraciones..."
 python manage.py makemigrations
+python manage.py showmigrations usuario
 python manage.py migrate --noinput
 
 echo "✅ Migraciones aplicadas correctamente."
