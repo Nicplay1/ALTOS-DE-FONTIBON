@@ -10,6 +10,9 @@ python manage.py migrate --fake vigilante zero --noinput
 python manage.py migrate --fake residente zero --noinput
 python manage.py migrate --fake administrador zero --noinput
 
+echo "🧹 Eliminando todos los datos existentes..."
+python manage.py flush --no-input
+
 echo "🧩 Borrando registros antiguos de migraciones..."
 python manage.py migrate --fake-initial --noinput
 
