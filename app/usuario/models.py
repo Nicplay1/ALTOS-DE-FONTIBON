@@ -259,14 +259,33 @@ class Visitante(models.Model):
 
 class DetallesParqueadero(models.Model):
     id_detalle = models.AutoField(primary_key=True)
-    tipo_propietario = models.CharField(max_length=10, choices=[('Visitante', 'Visitante'), ('Residente', 'Residente')])
-    id_visitante = models.ForeignKey(Visitante, on_delete=models.DO_NOTHING, blank=True, null=True)
-    id_vehiculo_residente = models.ForeignKey(VehiculoResidente, on_delete=models.DO_NOTHING, blank=True, null=True)
+    tipo_propietario = models.CharField(
+        max_length=10,
+        choices=[('Visitante', 'Visitante'), ('Residente', 'Residente')]
+    )
+    id_visitante = models.ForeignKey(
+        Visitante,
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
+        db_column='id_visitante'  # Evita que Django agregue _id
+    )
+    id_vehiculo_residente = models.ForeignKey(
+        'VehiculoResidente',
+        on_delete=models.DO_NOTHING,
+        blank=True,
+        null=True,
+        db_column='id_vehiculo_residente'
+    )
     registro = models.DateField(auto_now_add=True)
     hora_llegada = models.TimeField(blank=True, null=True)
     hora_salida = models.TimeField(blank=True, null=True)
     pago = models.FloatField(blank=True, null=True)
-    id_parqueadero = models.ForeignKey(Parqueadero, on_delete=models.DO_NOTHING)
+    id_parqueadero = models.ForeignKey(
+        'Parqueadero',
+        on_delete=models.DO_NOTHING,
+        db_column='id_parqueadero'
+    )
 
     class Meta:
         managed = True
