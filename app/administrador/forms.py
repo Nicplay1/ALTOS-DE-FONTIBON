@@ -1,14 +1,19 @@
 from django import forms
 from usuario.models import *
+from django.utils import timezone
 
-
+# ---------------- CAMBIAR ROL ----------------
 class CambiarRolForm(forms.ModelForm):
     class Meta:
         model = Usuario
         fields = ['id_rol']
         labels = {'id_rol': 'Rol'}
+        widgets = {
+            'id_rol': forms.Select(attrs={'class': 'form-select'})
+        }
 
 
+# ---------------- EDITAR RESERVA ----------------
 class EditarReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
@@ -26,6 +31,8 @@ class EditarReservaForm(forms.ModelForm):
             "estado": forms.Select(attrs={"class": "form-select-modern"})
         }
 
+
+# ---------------- NOTICIAS ----------------
 class NoticiasForm(forms.ModelForm):
     class Meta:
         model = Noticias
@@ -41,7 +48,9 @@ class NoticiasForm(forms.ModelForm):
                 'placeholder': 'Ingrese la descripción'
             }),
         }
-        
+
+
+# ---------------- VEHÍCULO RESIDENTE (documentos) ----------------
 class VehiculoResidenteForm(forms.ModelForm):
     class Meta:
         model = VehiculoResidente
@@ -52,12 +61,13 @@ class VehiculoResidenteForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Help text informativo
         self.fields['documentos'].help_text = "Estado manual de validación. Sobrescribe la validación automática."
 
+
+# ---------------- SORTEO ----------------
 class SorteoForm(forms.ModelForm):
     tipo_residente_propietario = forms.BooleanField(
-        required=False,  # Permite que quede vacío (null)
+        required=False,
         label='Propietario',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
@@ -65,22 +75,23 @@ class SorteoForm(forms.ModelForm):
     class Meta:
         model = Sorteo
         fields = ['tipo_residente_propietario', 'fecha_inicio', 'hora_sorteo']
-        widgets = {
-            'fecha_inicio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'hora_sorteo': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
-        }
         labels = {
             'fecha_inicio': 'Fecha de Inicio',
             'hora_sorteo': 'Hora del Sorteo',
         }
-        
-        def clean_fecha_creado(self):
-            fecha = self.cleaned_data.get('fecha_creado')
-            if fecha < timezone.now().date():
-                raise forms.ValidationError("No puedes seleccionar una fecha pasada.")
-            return fecha
-        
+        widgets = {
+            'fecha_inicio': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'hora_sorteo': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+        }
 
+    def clean_fecha_inicio(self):
+        fecha = self.cleaned_data.get('fecha_inicio')
+        if fecha and fecha < timezone.now().date():
+            raise forms.ValidationError("No puedes seleccionar una fecha pasada.")
+        return fecha
+
+
+# ---------------- ESTADO PAGO ----------------
 class EstadoPagoForm(forms.ModelForm):
     class Meta:
         model = PagosReserva
