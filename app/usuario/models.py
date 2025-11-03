@@ -247,7 +247,7 @@ class Visitante(models.Model):
     tipo_vehiculo = models.CharField(max_length=10, choices=TIPO_VEHICULO_CHOICES)
     placa = models.CharField(max_length=7)
     torre = models.CharField(max_length=10)
-    apartamento = models.CharField(max_length=10)
+    apartamento = models.IntegerField(null=False, default=0)
 
     class Meta:
         managed = True
