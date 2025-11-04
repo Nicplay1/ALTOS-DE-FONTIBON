@@ -1,6 +1,16 @@
 // =========================
 // ALERTAS AUTOMÁTICAS
 // =========================
+setInterval(function() {
+  fetch("{% url 'listar_noticias' %}")
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById("contenido_sorteos").innerHTML = html;
+    });
+}, 5000); // cada 5 segundos
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
         document.querySelectorAll(".alert-modern").forEach(el => {

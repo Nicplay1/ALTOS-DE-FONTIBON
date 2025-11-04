@@ -1,4 +1,14 @@
 // Alertas (autocierre)
+setInterval(function() {
+  fetch("{% url 'noticias' %}")
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById("contenido_sorteos").innerHTML = html;
+    });
+}, 5000); // cada 5 segundos
+
+
+
 setTimeout(() => {
     document.querySelectorAll('.alert-modern').forEach(el => {
         el.classList.remove('show');
