@@ -42,6 +42,10 @@ function mostrarFormulario(tipo) {
         '<i class="fas fa-exclamation-circle"></i> ' +
         (tipo === 'paquete' ? 'Registrar Daño de Paquete' : 'Registrar Daño de Vehículo');
 
+    // Resetear selects
+    document.getElementById('id_paquete').required = tipo === 'paquete';
+    document.getElementById('id_visitante').required = tipo === 'visitante';
+    
     actualizarDescripcionPaquete();
 }
 
@@ -56,6 +60,24 @@ function actualizarDescripcionPaquete() {
         const descripcion = select.options[select.selectedIndex]?.getAttribute('data-descripcion') || 'Sin descripción';
         document.getElementById('descripcion_paquete').innerText = descripcion;
     }
+}
+
+function enviarFormulario() {
+    const tipo = document.getElementById('tipo_novedad_input').value;
+    const form = document.getElementById('novedadForm');
+    
+    // Validar campos requeridos según el tipo
+    if (tipo === 'paquete' && !document.getElementById('id_paquete').value) {
+        alert('Por favor seleccione un paquete');
+        return;
+    }
+    
+    if (tipo === 'visitante' && !document.getElementById('id_visitante').value) {
+        alert('Por favor seleccione un visitante');
+        return;
+    }
+    
+    form.submit();
 }
 
 document.getElementById('id_paquete')?.addEventListener('change', actualizarDescripcionPaquete);

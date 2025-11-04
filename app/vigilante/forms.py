@@ -143,11 +143,11 @@ class NovedadesForm(forms.ModelForm):
     )
     id_paquete = forms.ModelChoiceField(
         queryset=Paquete.objects.all(),
-        required=True
+        required=False
     )
     id_visitante = forms.ModelChoiceField(
         queryset=Visitante.objects.all(),
-        required=True
+        required=False
     )
     id_usuario = forms.ModelChoiceField(
         queryset=Usuario.objects.filter(id_rol=4),
@@ -161,8 +161,3 @@ class NovedadesForm(forms.ModelForm):
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'foto': forms.FileInput(attrs={'class': 'form-control'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.required = True

@@ -232,8 +232,8 @@ def eliminar_reserva(request, id_reserva):
 
 @rol_requerido([2])
 @login_requerido
-def detalles(request, id_vehiculo_residente):
-    vehiculo = get_object_or_404(VehiculoResidente, pk=id_vehiculo_residente)
+def detalles(request, vehiculo_id):
+    vehiculo = get_object_or_404(VehiculoResidente, pk=vehiculo_id)
     archivos = ArchivoVehiculo.objects.filter(id_vehiculo=vehiculo)
     
     archivos_ids = [archivo.id_tipo_archivo.pk for archivo in archivos]
@@ -255,7 +255,7 @@ def detalles(request, id_vehiculo_residente):
                 archivo_obj.save()
                 accion = "actualizado" if archivo_existente else "registrado"
                 messages.success(request, f"Archivo '{archivo_obj.id_tipo_archivo}' {accion} correctamente.")
-                return redirect('detalles', id_vehiculo_residente=vehiculo.id_vehiculo_residente)
+                return redirect('detalles', vehiculo_id=vehiculo.id_vehiculo_residente)
     else:
         form = ArchivoVehiculoForm()
 

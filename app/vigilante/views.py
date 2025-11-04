@@ -1,10 +1,6 @@
 import re  
 from django.shortcuts import render, redirect, get_object_or_404
 from usuario.models import *
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from usuario.models import *
 from .forms import *
 from django.contrib import messages
 from django.utils import timezone
@@ -16,7 +12,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from .models import *
 from reportlab.lib.pagesizes import letter
-from datetime import datetime
+from datetime import datetime, timedelta
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
@@ -28,7 +24,6 @@ from django.conf import settings
 @login_requerido
 def panel_general_vigilante(request):
     return render(request, "vigilante/panel.html")
-
 
 
 def normalizar_placa(placa_raw):
@@ -58,7 +53,6 @@ def normalizar_placa(placa_raw):
     raise ValueError("Formato de placa inválido. Use AAA123 (carro) o AAA12A (moto).")
 
 
-#buscar_paquete
 @rol_requerido([4])
 @login_requerido
 def registrar_parqueadero(request):
@@ -211,8 +205,8 @@ def registrar_parqueadero(request):
             detalle.valor_pago = 0
             detalle.tiempo_total = None
         elif detalle.hora_llegada and detalle.hora_salida:
-            llegada_dt = datetime.combine(detalle.registro.date(), detalle.hora_llegada)
-            salida_dt = datetime.combine(detalle.registro.date(), detalle.hora_salida)
+            llegada_dt = datetime.combine(detalle.registro, detalle.hora_llegada)
+            salida_dt = datetime.combine(detalle.registro, detalle.hora_salida)
 
             # 🔹 Corrección: si la salida es menor que la llegada, pasó al día siguiente
             if salida_dt < llegada_dt:
@@ -220,7 +214,11 @@ def registrar_parqueadero(request):
 
             duracion = salida_dt - llegada_dt
             horas = duracion.total_seconds() / 3600
-            detalle.tiempo_total = duracion
+            total_seconds = int(duracion.total_seconds())  # elimina microsegundos
+            horas_int = total_seconds // 3600
+            minutos_int = (total_seconds % 3600) // 60
+            segundos_int = total_seconds % 60
+            detalle.tiempo_total_str = f"{horas_int:02d}:{minutos_int:02d}:{segundos_int:02d}"
             detalle.valor_pago = round(max(horas, 1) * 2000, 2)
         else:
             detalle.tiempo_total = None
@@ -241,8 +239,22 @@ def poner_hora_salida(request, id_detalle):
     detalle = get_object_or_404(DetallesParqueadero, id_detalle=id_detalle)
     if not detalle.hora_salida:
         detalle.hora_salida = timezone.localtime().time()
+
+        # Calcular tiempo total y valor a pagar
+        llegada_dt = datetime.combine(detalle.registro, detalle.hora_llegada)
+        salida_dt = datetime.combine(detalle.registro, detalle.hora_salida)
+
+        if salida_dt < llegada_dt:
+            salida_dt += timedelta(days=1)
+
+        duracion = salida_dt - llegada_dt
+        horas = duracion.total_seconds() / 3600
+
+        detalle.tiempo_total = duracion
+        detalle.valor_pago = round(max(horas, 1) * 2000, 2)
         detalle.save()
-        messages.success(request, "Hora de salida registrada.")
+
+        messages.success(request, "Hora de salida registrada. Tiempo y valor calculados.")
     else:
         messages.info(request, "Este registro ya tiene hora de salida.")
     return redirect('registrar_detalle_parqueadero')
@@ -256,7 +268,6 @@ def realizar_pago(request, id_detalle):
         llegada_dt = datetime.combine(detalle.registro, detalle.hora_llegada)
         salida_dt = datetime.combine(detalle.registro, detalle.hora_salida)
 
-        # 🔹 Misma corrección aquí
         if salida_dt < llegada_dt:
             salida_dt += timedelta(days=1)
 
@@ -272,8 +283,6 @@ def realizar_pago(request, id_detalle):
 
         messages.success(request, f"Pago realizado: {detalle.pago} pesos")
     return redirect('registrar_detalle_parqueadero')
-
-
 
 
 @rol_requerido([4])
@@ -361,6 +370,7 @@ def registrar_entrega_view(request):
 
     return JsonResponse({'success': False})
 
+
 @rol_requerido([4])
 @login_requerido
 def buscar_paquete(request):
@@ -385,6 +395,7 @@ def buscar_paquete(request):
 
     return JsonResponse({"resultados": resultados})
 
+
 @rol_requerido([4])
 @login_requerido
 def correspondencia(request):
@@ -402,6 +413,7 @@ def correspondencia(request):
         "registrar_form": registrar_form,
         "entrega_form": entrega_form,
     })
+
 
 @rol_requerido([4])
 @login_requerido
@@ -451,7 +463,6 @@ def registrar_paquete(request):
     return redirect(reverse('correspondencia'))
 
 
-
 @rol_requerido([4])
 @login_requerido
 def entregar_paquete(request):
@@ -486,92 +497,49 @@ def novedades_view(request):
 
     if request.method == "POST":
         form = NovedadesForm(request.POST, request.FILES)
-        
+
         if form.is_valid():
-            tipo_novedad = form.cleaned_data["tipo_novedad"]
-            descripcion = form.cleaned_data["descripcion"]
-            foto = form.cleaned_data["foto"]
-            vigilante = form.cleaned_data["id_usuario"]
+            tipo_novedad = form.cleaned_data.get("tipo_novedad")
+            descripcion = form.cleaned_data.get("descripcion", "")
+            foto = form.cleaned_data.get("foto", None)
+            vigilante = form.cleaned_data.get("id_usuario")
 
-            novedad = None
-            detalle_residente = None
+            novedad_data = {
+                "descripcion": descripcion,
+                "foto": foto,
+                "id_usuario": vigilante,
+                "id_detalle_residente": None,
+                "id_paquete": None,
+                "id_visitante": None,
+            }
 
-            # Crear novedad según el tipo
             if tipo_novedad == "paquete":
-                paquete = form.cleaned_data["id_paquete"]
-                detalle_residente = DetalleResidente.objects.filter(
-                    apartamento=paquete.apartamento,
-                    torre=paquete.torre
-                ).first()
-                novedad = Novedades.objects.create(
-                    descripcion=descripcion,
-                    foto=foto,
-                    id_detalle_residente=detalle_residente,
-                    id_paquete=paquete,
-                    id_usuario=vigilante
-                )
+                paquete = form.cleaned_data.get("id_paquete")
+                if paquete:
+                    detalle_residente = DetalleResidente.objects.filter(
+                        apartamento=paquete.apartamento,
+                        torre=paquete.torre
+                    ).first()
+                    novedad_data["id_paquete"] = paquete
+                    novedad_data["id_detalle_residente"] = detalle_residente
 
             elif tipo_novedad == "visitante":
-                visitante = form.cleaned_data["id_visitante"]
-                if visitante.apartamento and visitante.torre:
+                visitante = form.cleaned_data.get("id_visitante")
+                if visitante:
                     detalle_residente = DetalleResidente.objects.filter(
                         apartamento=visitante.apartamento,
                         torre=visitante.torre
                     ).first()
-                novedad = Novedades.objects.create(
-                    descripcion=descripcion,
-                    foto=foto,
-                    id_visitante=visitante,
-                    id_detalle_residente=detalle_residente,
-                    id_usuario=vigilante
-                )
+                    novedad_data["id_visitante"] = visitante
+                    novedad_data["id_detalle_residente"] = detalle_residente
 
-            # notificación a administrador
-            admin_emails = Usuario.objects.filter(id_rol=3).values_list('correo', flat=True)
-            if admin_emails:
-                try:
-                    send_mail(
-                        subject=f"Nueva novedad registrada - {tipo_novedad.upper()}",
-                        message=(
-                            f"Hola Administrador,\n\n"
-                            f"Se ha registrado una nueva novedad por el vigilante {vigilante.nombres} {vigilante.apellidos}.\n\n"
-                            f"Tipo de novedad: {tipo_novedad}\n"
-                            f"Descripción: {descripcion}\n"
-                            f"Fecha: {novedad.fecha}\n\n"
-                            f"Ya puedes revisar la novedad registrada en el aplicativo.\n"
-                        ),
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=list(admin_emails),
-                        fail_silently=False,
-                    )
-                except Exception as e:
-                    print(f"Error enviando correo: {e}")
+            # Crear la novedad en la DB
+            novedad = Novedades.objects.create(**novedad_data)
 
-            # notificación al residente (solo para paquetes)
-            if tipo_novedad == "paquete" and detalle_residente and detalle_residente.cod_usuario and detalle_residente.cod_usuario.correo:
-                try:
-                    send_mail(
-                        subject="Notificación de novedad en su paquete",
-                        message=(
-                            f"Estimado residente,\n\n"
-                            f"Le informamos que se ha registrado una novedad relacionada con su paquete.\n\n"
-                            f"Descripción: {descripcion}\n"
-                            f"Fecha: {novedad.fecha}\n\n"
-                            f"Por favor comuníquese con la administración para plantear una solución.\n"
-                        ),
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[detalle_residente.cod_usuario.correo],
-                        fail_silently=True,
-                    )
-                except Exception as e:
-                    print(f"Error enviando correo al residente: {e}")
-
-            messages.success(request, " Novedad registrada correctamente.")
+            messages.success(request, "Novedad registrada correctamente.")
             return redirect("novedades")
 
-        else:
-            # Si faltan campos, muestra errores
-            messages.error(request, " Debes completar todos los campos antes de enviar el formulario.")
+        # No mostramos error si no llenan todos los campos
 
     else:
         form = NovedadesForm()
@@ -586,6 +554,7 @@ def novedades_view(request):
         "visitantes": Visitante.objects.all(),
     }
     return render(request, "vigilante/novedades/listar_novedades.html", context)
+
 
 
 
@@ -650,7 +619,7 @@ def reporte_visitantes_pdf(request):
                            topMargin=70, bottomMargin=70)
     elements = []
 
-    # Estilos (mantener igual...)
+    # Estilos
     styles = getSampleStyleSheet()
 
     COLOR_PRIMARIO = colors.HexColor('#065F46')

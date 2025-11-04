@@ -2,13 +2,16 @@ from django.db import models
 from django.utils import timezone
 import uuid
 from datetime import timedelta
-
+from datetime import time
+from vigilante.models import *
 
 class ProcesoValidacion(models.Model):
     activo = models.BooleanField(default=False)
 
     def __str__(self):
         return "Activo" if self.activo else "Inactivo"
+    
+    
 
 
 class Rol(models.Model):
@@ -84,8 +87,8 @@ class ZonaComun(models.Model):
 
 class Reserva(models.Model):
     id_reserva = models.AutoField(primary_key=True)
-    hora_inicio = models.TimeField()
-    hora_fin = models.TimeField()
+    hora_inicio = models.TimeField(null=True, blank=True)
+    hora_fin = models.TimeField(null=True, blank=True)
     estado = models.CharField(
         max_length=15,
         choices=[('Rechazada', 'Rechazada'), ('Aprobada', 'Aprobada'), ('En espera', 'En espera')],
@@ -208,7 +211,7 @@ class Sorteo(models.Model):
     fecha_creado = models.DateTimeField(auto_now_add=True)
     tipo_residente_propietario = models.BooleanField(null=True, blank=True)
     fecha_inicio = models.DateField()
-    hora_sorteo = models.TimeField(default=1)
+    hora_sorteo = models.TimeField(default=time(0, 0))
     estado = models.BooleanField(default=False)
 
     class Meta:
@@ -301,7 +304,7 @@ class RegistroCorrespondencia(models.Model):
     id_correspondencia = models.AutoField(primary_key=True)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
     descripcion = models.TextField()
-    fecha_registro = models.DateTimeField()
+    fecha_registro = models.DateTimeField(default=timezone.now)
     cod_vigilante = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING, related_name='correspondencias_vigilante')
 
     class Meta:
@@ -350,7 +353,12 @@ class Novedades(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)
     id_detalle_residente = models.ForeignKey(DetalleResidente, on_delete=models.DO_NOTHING, null=True, blank=True)
     id_visitante = models.ForeignKey(Visitante, on_delete=models.DO_NOTHING, null=True, blank=True)
-    id_paquete = models.IntegerField(null=True, blank=True)  # Puedes hacer ForeignKey si tienes modelo Paquete
+    id_paquete = models.ForeignKey(
+        Paquete,
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True
+    )
     id_usuario = models.ForeignKey(Usuario, on_delete=models.DO_NOTHING, null=True, blank=True)
 
     class Meta:

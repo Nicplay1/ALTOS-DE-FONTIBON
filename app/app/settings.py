@@ -66,20 +66,41 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # ---------------------------------------
 # 🗄️ BASE DE DATOS (Render PostgreSQL)
 # ---------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'proyecto_bd_c4on',
-        'USER': 'proyecto_bd_c4on_user',
-        'PASSWORD': 'eV16YhehCwxaSkIWw8MpEHmmNvVtKC8G',
-        'HOST': 'dpg-d43t4rili9vc73dfutn0-a.oregon-postgres.render.com',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require'
+import pymysql
+pymysql.install_as_MySQLdb()
+
+# Opción: cambiar 'default_db' a 'mysql' o 'postgres' según la base que quieras usar
+default_db = 'postgres'  # 'mysql' o 'postgres'
+
+if default_db == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'proyecto_bd',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            }
         }
     }
-}
-
+elif default_db == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'proyecto_bd_c4on',
+            'USER': 'proyecto_bd_c4on_user',
+            'PASSWORD': 'eV16YhehCwxaSkIWw8MpEHmmNvVtKC8G',
+            'HOST': 'dpg-d43t4rili9vc73dfutn0-a.oregon-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require'
+            }
+        }
+    }
 # ---------------------------------------
 # 🔐 VALIDACIÓN DE CONTRASEÑAS
 # ---------------------------------------

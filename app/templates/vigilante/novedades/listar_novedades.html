@@ -56,7 +56,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Navegación</div>
 
-                <a href="{% url 'panel_vigilante' %}" class="nav-item ">
+                <a href="{% url 'panel_vigilante' %}" class="nav-item">
                     <i class="fas fa-home"></i>
                     <span>Inicio</span>
                 </a>
@@ -102,7 +102,7 @@
 
         <div class="content-body">
             <!-- Botones de acción -->
-            <div class="action-buttons">
+            <div class="action-buttons mb-3">
                 <button class="btn-modern" onclick="mostrarFormulario('paquete')">
                     <i class="fas fa-box"></i> Registrar Daño de Paquete
                 </button>
@@ -195,7 +195,7 @@
 
             <!-- Lista de Novedades -->
             {% if novedades %}
-            <div class="table-modern">
+            <div class="table-modern mt-4">
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
@@ -212,10 +212,26 @@
                     <tbody>
                         {% for novedad in novedades %}
                         <tr>
-                            <td>{% if novedad.id_detalle_residente %}{{ novedad.id_detalle_residente.cod_usuario.nombres }} {{ novedad.id_detalle_residente.cod_usuario.apellidos }}{% endif %}</td>
-                            <td>{% if novedad.id_visitante %}{{ novedad.id_visitante.nombres }} {{ novedad.id_visitante.apellidos }}{% endif %}</td>
-                            <td>{% if novedad.id_paquete %}{{ novedad.id_paquete.apartamento }} / {{ novedad.id_paquete.torre }}{% endif %}</td>
-                            <td>{% if novedad.id_visitante %}{{ novedad.id_visitante.placa }}{% endif %}</td>
+                            <td>
+                                {% if novedad.id_detalle_residente %}
+                                    {{ novedad.id_detalle_residente.cod_usuario.nombres }} {{ novedad.id_detalle_residente.cod_usuario.apellidos }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if novedad.id_visitante %}
+                                    {{ novedad.id_visitante.nombres }} {{ novedad.id_visitante.apellidos }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if novedad.id_paquete %}
+                                    {{ novedad.id_paquete.apartamento }} / {{ novedad.id_paquete.torre }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if novedad.id_visitante %}
+                                    {{ novedad.id_visitante.placa }}
+                                {% endif %}
+                            </td>
                             <td>{{ novedad.fecha|date:"d-m-Y H:i" }}</td>
                             <td>
                                 {% if novedad.id_paquete %}
@@ -223,7 +239,11 @@
                                 {% endif %}
                                 <strong>Reporte:</strong> {{ novedad.descripcion }}
                             </td>
-                            <td>{{ novedad.id_usuario.nombres }} {{ novedad.id_usuario.apellidos }}</td>
+                            <td>
+                                {% if novedad.id_usuario %}
+                                    {{ novedad.id_usuario.nombres }} {{ novedad.id_usuario.apellidos }}
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if novedad.foto %}
                                     <a href="{{ novedad.foto.url }}" target="_blank" class="btn-modern">
@@ -237,7 +257,7 @@
                 </table>
             </div>
             {% else %}
-                <div class="empty-state">
+                <div class="empty-state mt-4">
                     <i class="fas fa-table"></i>
                     <div>No hay novedades registradas.</div>
                 </div>
