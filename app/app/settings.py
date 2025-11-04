@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'residente',
     'vigilante',
     'crispy_forms',
+    'channels',
 ]
 
 # ---------------------------------------
