@@ -197,16 +197,16 @@
                             <tbody>
                                 {% for archivo in archivos %}
                                 <tr>
-                                    <td>{{ archivo.idTipoArchivo.tipo_documento }}</td>
+                                    <td>{{ archivo.id_tipo_archivo.tipo_documento }}</td>
                                     <td>
-                                        <a href="{{ archivo.archivo.url }}" target="_blank" class="btn-modern btn-sm">
+                                        <a href="{{ archivo.ruta_archivo.url }}" target="_blank" class="btn-modern btn-sm">
                                             <i class="fas fa-eye"></i> Ver Archivo
                                         </a>
                                     </td>
-                                    <td>{{ archivo.fechaVencimiento|default:"No especificada" }}</td>
+                                    <td>{{ archivo.fecha_vencimiento|default:"No especificada" }}</td>
                                     <td>
-                                        <span class="badge {% if archivo.idTipoArchivo.tipo_documento in documentos_subidos %}bg-success{% else %}bg-secondary{% endif %}">
-                                            {% if archivo.idTipoArchivo.tipo_documento in documentos_subidos %}Subido{% else %}Faltante{% endif %}
+                                        <span class="badge {% if archivo.id_tipo_archivo.tipo_documento in documentos_subidos %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {% if archivo.id_tipo_archivo.tipo_documento in documentos_subidos %}Subido{% else %}Faltante{% endif %}
                                         </span>
                                     </td>
                                 </tr>

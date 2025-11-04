@@ -396,8 +396,8 @@ def lista_sorteos(request):
 
 @rol_requerido([2])
 @login_requerido
-def detalle_sorteo(request, id_sorteo):
-    sorteo = get_object_or_404(Sorteo, id_sorteo=id_sorteo)
+def detalle_sorteo(request, sorteo_id):
+    sorteo = get_object_or_404(Sorteo, id_sorteo=sorteo_id)
     usuario_logueado = getattr(request, 'usuario', None)
 
     vehiculo = VehiculoResidente.objects.filter(
