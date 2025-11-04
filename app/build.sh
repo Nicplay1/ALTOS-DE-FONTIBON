@@ -5,7 +5,6 @@ echo "🚀 Instalando dependencias..."
 pip install -r requirements.txt
 
 echo "⚙️ Limpiando base de datos..."
-# Deshacer migraciones fake de tus apps
 python manage.py migrate --fake usuario zero --noinput
 python manage.py migrate --fake vigilante zero --noinput
 python manage.py migrate --fake residente zero --noinput
@@ -15,7 +14,6 @@ echo "🧹 Eliminando todos los datos existentes..."
 python manage.py flush --no-input
 
 echo "🧩 Aplicando migraciones existentes..."
-# Aplica migraciones reales ahora, no solo fake
 python manage.py makemigrations
 python manage.py migrate --fake-initial --noinput
 
