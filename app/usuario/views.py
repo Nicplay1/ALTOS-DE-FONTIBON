@@ -9,8 +9,8 @@ from django.core.mail import send_mail
 from django.urls import reverse
 import re
 from django.contrib.auth import logout
-from django.utils import timezone
-from datetime import timedelta
+import datetime
+
 
 
 def register_view(request):
