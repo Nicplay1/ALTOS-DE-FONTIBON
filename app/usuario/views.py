@@ -29,6 +29,23 @@ def register_view(request):
 
 
 def login_view(request):
+    if "intentos_fallidos" not in request.session:
+        request.session["intentos_fallidos"] = 0
+    if "bloqueado_hasta" not in request.session:
+        request.session["bloqueado_hasta"] = None
+
+    # Verificar si está bloqueado
+    if request.session["bloqueado_hasta"]:
+        bloqueado_hasta = datetime.datetime.fromisoformat(request.session["bloqueado_hasta"])
+        if datetime.datetime.now() < bloqueado_hasta:
+            minutos_restantes = (bloqueado_hasta - datetime.datetime.now()).seconds // 60
+            messages.error(request, f"Has superado los intentos. Intenta de nuevo en {minutos_restantes} minutos.")
+            return render(request, "usuario/login.html", {"form": LoginForm()})
+        else:
+            # Resetear bloqueo cuando ya pasó el tiempo
+            request.session["intentos_fallidos"] = 0
+            request.session["bloqueado_hasta"] = None
+
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -37,29 +54,17 @@ def login_view(request):
 
             try:
                 usuario = Usuario.objects.get(numero_documento=numero_documento)
-
-                # Revisar bloqueo temporal en sesión
-                bloqueado = request.session.get(f"bloqueo_{usuario.id_usuario}")
-                if bloqueado:
-                    tiempo_fin = bloqueado
-                    if timezone.now() < tiempo_fin:
-                        minutos_restantes = int((tiempo_fin - timezone.now()).total_seconds() / 60)
-                        messages.error(request, f"Usuario bloqueado. Intenta de nuevo en {minutos_restantes} minutos.")
-                        return render(request, "usuario/login.html", {"form": form})
-                    else:
-                        # Desbloquear después de 10 min
-                        request.session.pop(f"bloqueo_{usuario.id_usuario}", None)
-                        usuario.intentos_fallidos = 0
-                        usuario.save()
-
                 if check_password(contraseña, usuario.contraseña):
-                    usuario.intentos_fallidos = 0
-                    usuario.save()
+                    # Reiniciar intentos
+                    request.session["intentos_fallidos"] = 0
+                    request.session["bloqueado_hasta"] = None
+
+                    # Guardar sesión
                     request.session['usuario_id'] = usuario.id_usuario
                     request.session['rol_id'] = usuario.id_rol_id
                     messages.success(request, f"Bienvenido {usuario.nombres} {usuario.apellidos}!")
 
-                    # Redirecciones según rol
+                    # Redirigir por rol
                     if usuario.id_rol_id == 1:
                         return redirect("index")
                     elif usuario.id_rol_id == 2:
@@ -71,28 +76,28 @@ def login_view(request):
                     elif usuario.id_rol_id == 5:
                         return redirect("asistente_home")
                 else:
-                    usuario.intentos_fallidos += 1
-                    if usuario.intentos_fallidos >= 5:
-                        # Bloqueo 10 minutos en sesión
-                        request.session[f"bloqueo_{usuario.id_usuario}"] = timezone.now() + timedelta(minutes=10)
-                        messages.error(request, "Usuario bloqueado por demasiados intentos fallidos. Intenta en 10 minutos.")
+                    request.session["intentos_fallidos"] += 1
+                    if request.session["intentos_fallidos"] >= 5:
+                        # Bloquear por 15 minutos
+                        bloqueado_hasta = datetime.datetime.now() + datetime.timedelta(minutes=15)
+                        request.session["bloqueado_hasta"] = bloqueado_hasta.isoformat()
+                        messages.error(request, "Has superado los intentos. Intenta de nuevo en 15 minutos.")
                     else:
-                        messages.error(request, f"Contraseña incorrecta. Intento {usuario.intentos_fallidos}/5.")
-                    usuario.save()
-
+                        restantes = 5 - request.session["intentos_fallidos"]
+                        messages.error(request, f"Contraseña incorrecta. Intentos restantes: {restantes}")
             except Usuario.DoesNotExist:
-                messages.error(request, "Documento no registrado.")
+                request.session["intentos_fallidos"] += 1
+                if request.session["intentos_fallidos"] >= 5:
+                    bloqueado_hasta = datetime.datetime.now() + datetime.timedelta(minutes=15)
+                    request.session["bloqueado_hasta"] = bloqueado_hasta.isoformat()
+                    messages.error(request, "Has superado los intentos. Intenta de nuevo en 15 minutos.")
+                else:
+                    restantes = 5 - request.session["intentos_fallidos"]
+                    messages.error(request, f"Documento no registrado. Intentos restantes: {restantes}")
     else:
         form = LoginForm()
 
     return render(request, "usuario/login.html", {"form": form})
-
-
-def logout_view(request):
-    logout(request)
-    request.session.flush()
-    messages.success(request, "Has cerrado sesión correctamente.")
-    return redirect('login')
 
 
 @login_requerido
