@@ -527,7 +527,7 @@ def sorteo_vehiculos(request, sorteo_id):
                                     "Te invitamos a participar en futuros sorteos.\n\n"
                                     "Atentamente,\nAdministración Altos de Fontibón"
                                 ),
-                                from_email="altosdefontibon.cr@gmail.com",
+                                from_email="nicolasballesteros900@gmail.com",
                                 recipient_list=[correo_perdedor],
                                 fail_silently=True,
                             )
