@@ -25,6 +25,9 @@ def register_view(request):
     return render(request, "usuario/register.html", {"form": form})
 
 
+MAX_INTENTOS = 5
+BLOQUEO_MINUTOS = 15  # Bloqueo temporal de 15 minutos
+
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -34,13 +37,25 @@ def login_view(request):
 
             try:
                 usuario = Usuario.objects.get(numero_documento=numero_documento)
+
+                # Verificar si el usuario está bloqueado
+                if usuario.bloqueado_hasta and usuario.bloqueado_hasta > timezone.now():
+                    minutos_restantes = int((usuario.bloqueado_hasta - timezone.now()).total_seconds() / 60)
+                    messages.error(request, f"Usuario bloqueado. Intenta nuevamente en {minutos_restantes} minutos.")
+                    return render(request, "usuario/login.html", {"form": form})
+
                 if check_password(contraseña, usuario.contraseña):
+                    # Resetear intentos fallidos al iniciar sesión correctamente
+                    usuario.intentos_fallidos = 0
+                    usuario.bloqueado_hasta = None
+                    usuario.save()
+
                     # Guardar datos en sesión
                     request.session['usuario_id'] = usuario.id_usuario
                     request.session['rol_id'] = usuario.id_rol_id
                     messages.success(request, f"Bienvenido {usuario.nombres} {usuario.apellidos}!")
 
-                    # Redirecciones según el rol
+                    # Redirecciones según rol
                     if usuario.id_rol_id == 1:
                         return redirect("index")
                     elif usuario.id_rol_id == 2:
@@ -52,9 +67,18 @@ def login_view(request):
                     elif usuario.id_rol_id == 5:
                         return redirect("asistente_home")
                 else:
-                    messages.error(request, " Contraseña incorrecta.")
+                    # Contraseña incorrecta, aumentar contador
+                    usuario.intentos_fallidos += 1
+                    if usuario.intentos_fallidos >= MAX_INTENTOS:
+                        usuario.bloqueado_hasta = timezone.now() + timedelta(minutes=BLOQUEO_MINUTOS)
+                        messages.error(request, f"Usuario bloqueado por {BLOQUEO_MINUTOS} minutos debido a múltiples intentos fallidos.")
+                    else:
+                        mensajes_restantes = MAX_INTENTOS - usuario.intentos_fallidos
+                        messages.error(request, f"Contraseña incorrecta. Te quedan {mensajes_restantes} intentos.")
+                    usuario.save()
+
             except Usuario.DoesNotExist:
-                messages.error(request, " Documento no registrado.")
+                messages.error(request, "Documento no registrado.")
     else:
         form = LoginForm()
 

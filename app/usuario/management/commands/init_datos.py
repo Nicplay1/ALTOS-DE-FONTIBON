@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from usuario.models import Rol, ZonaComun, TipoArchivo, Parqueadero, Usuario
+from django.contrib.auth.hashers import make_password
 
 class Command(BaseCommand):
     help = "Inserta datos iniciales en las tablas rol, zona_comun, tipo_archivo, parqueadero y usuario admin"
@@ -107,7 +108,7 @@ class Command(BaseCommand):
                 "correo": "admin@altosdefontibon.com",
                 "telefono": "123456789012",  # 12 dígitos, los primeros 7 fijos
                 "celular": "3216549870",      # inventado
-                "contraseña": "administradro.2025$",
+                "contraseña": make_password("administradro.2025$"),  # ⚡ contraseña hachada
                 "id_rol": rol_admin,
                 "estado": "Activo",
             }
