@@ -6,12 +6,43 @@ import re
 
 
 def validar_contraseña(value):
-    # Longitud mínima
-    if len(value) < 6:
-        raise ValidationError("La contraseña debe tener al menos 6 caracteres.")
-    # Al menos una mayúscula
+
+    if len(value) < 12:
+        raise ValidationError("La contraseña debe tener al menos 12 caracteres.")
+    
+
     if not re.search(r"[A-Z]", value):
         raise ValidationError("La contraseña debe contener al menos una letra mayúscula.")
+
+
+    if not re.search(r"\d", value):
+        raise ValidationError("La contraseña debe contener al menos un número.")
+    
+
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>_\-+=]", value):
+        raise ValidationError("La contraseña debe contener al menos un carácter especial.")
+
+
+def validar_celular(value):
+    if not re.fullmatch(r'\d{10}', value):
+        raise ValidationError("El número de celular debe tener exactamente 10 dígitos numéricos.")
+
+
+def validar_telefono(value):
+    if not re.fullmatch(r'\d{7}', value):
+        raise ValidationError("El número de teléfono debe tener exactamente 7 dígitos numéricos.")
+
+
+def validar_nombre_apellido(value):
+    """
+    Valida que el nombre o apellido solo contenga letras y espacios,
+    sin números ni caracteres especiales.
+    """
+    if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$', value):
+        raise ValidationError(
+            "EL nombre de usuario no debe tener números ni caracteres especiales."
+        )
+
 
 
 class RegisterForm(forms.ModelForm):
@@ -42,11 +73,11 @@ class RegisterForm(forms.ModelForm):
         widgets = {
             'nombres': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese sus nombres'
+                'placeholder': 'Ingrese su nombre'
             }),
             'apellidos': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese sus apellidos'
+                'placeholder': 'Ingrese su apellido'
             }),
             'tipo_documento': forms.Select(attrs={
                 'class': 'form-control',
@@ -54,28 +85,50 @@ class RegisterForm(forms.ModelForm):
             }),
             'numero_documento': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su número_documento'
+                'placeholder': 'Número de documento'
             }),
             'correo': forms.EmailInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su correo'
+                'placeholder': 'Correo electrónico'
             }),
             'telefono': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su telefono'
+                'placeholder': 'Teléfono'
             }),
             'celular': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ingrese su celular'
+                'placeholder': 'Celular'
             }),
         }
+
+
+
+
+    def clean_nombres(self):
+        nombres = self.cleaned_data.get("nombres")
+        validar_nombre_apellido(nombres)
+        return nombres
+
+    def clean_apellidos(self):
+        apellidos = self.cleaned_data.get("apellidos")
+        validar_nombre_apellido(apellidos)
+        return apellidos
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get("telefono")
+        validar_telefono(telefono)
+        return telefono
+
+    def clean_celular(self):
+        celular = self.cleaned_data.get("celular")
+        validar_celular(celular)
+        return celular
 
     def clean(self):
         cleaned_data = super().clean()
         contraseña = cleaned_data.get("contraseña")
         confirmar_contraseña = cleaned_data.get("confirmar_contraseña")
 
-        # Validación de coincidencia
         if contraseña and confirmar_contraseña and contraseña != confirmar_contraseña:
             raise ValidationError("Las contraseñas no coinciden.")
 
@@ -112,10 +165,9 @@ class UsuarioUpdateForm(forms.ModelForm):
         usuario = super().save(commit=False)
         nueva_contrasena = self.cleaned_data.get('contraseña')
 
-        if nueva_contrasena:  # solo actualiza si se ingresa algo
+        if nueva_contrasena:
             usuario.contraseña = make_password(nueva_contrasena)
         else:
-            # si no hay contraseña nueva, mantenemos la que ya estaba
             usuario.contraseña = Usuario.objects.get(pk=usuario.pk).contraseña
 
         if commit:

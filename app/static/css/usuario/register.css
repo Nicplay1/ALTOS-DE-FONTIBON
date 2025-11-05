@@ -22,23 +22,22 @@ body {
   overflow: hidden;
   box-shadow: 0px 8px 30px rgba(0,0,0,0.15);
   min-height: 60px;
-  max-height: 750px;;
+  max-height: 750px;
   display: flex;
-  flex-wrap: wrap;  /* Permite que los elementos salten a la siguiente fila */
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .input-box {
   position: relative;
-  width: 100%; /* Corregimos el 150% que lo sacaba de centro */
+  width: 100%;
   margin-bottom: 15px;
   flex-direction: column;
   display: flex;
-  flex-wrap: wrap;  /* Permite que los elementos salten a la siguiente fila */
-  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.input-box i {  /* estos son para los iconos del login */
+.input-box i {
   position: absolute;
   top: 50%;
   left: 10px;
@@ -46,13 +45,16 @@ body {
   color: #777;
 }
 
+.toggle-password:hover {
+  color: #009c5c;
+}
+
 .input-box input {
   width: 100%;
-  padding: 12px 12px 12px 35px;
+  padding: 12px 40px;
   border: 1px solid #000000;
   border-radius: 6px;
   outline: none;
-  
 }
 
 .input-box input:focus {
@@ -76,6 +78,33 @@ body {
   border-color: #009c5c;
 }
 
+/* Contenedor para campos de contraseña */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container i.fa-lock {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: #777;
+}
+
+.password-container .toggle-password {
+  position: absolute;
+  top: 50%;
+  left: 150px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #777;
+}
+
+.password-container .toggle-password:hover {
+  color: #009c5c;
+}
+
 /* Imagen izquierda */
 .image-side {
   flex: 1;
@@ -95,8 +124,6 @@ body {
   position: relative;
 }
 
-
-
 /* Formulario */
 .form-side {
   flex: 1.1;
@@ -105,7 +132,6 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  
 }
 
 .logo {
@@ -192,7 +218,6 @@ form {
   align-items: center;
 }
 
-
 .btn {
   width: 100%;
   padding: 12px;
@@ -259,7 +284,7 @@ form {
   z-index: 2000;
   animation: slideCenter 0.5s ease forwards, hideCenter 0.5s ease forwards 7s;
   font-size: 18px;
-  }
+}
 
 /* Estilo toast de error contraseña */
 .password-error {
@@ -288,24 +313,24 @@ form {
 /* Animaciones */
 @keyframes slideCenter {
   from {
-  top: 50%;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.9);
+    top: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
   }
   to {
-  top: 20px;
-  opacity: 1;
-  transform: translate(-50%, 0) scale(1);
+    top: 20px;
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
   }
 }
 
 @keyframes hideCenter {
-    from {
+  from {
     top: 20px;
     opacity: 1;
     transform: translate(-50%, 0) scale(1);
-    }
-    to {
+  }
+  to {
     top: 50%;
     opacity: 0;
     transform: translate(-50%, -50%) scale(0.9);
@@ -315,46 +340,207 @@ form {
 .show-error {
   display: block !important;
   animation: slideCenter 0.5s ease forwards,
-  hideCenter 0.5s ease forwards 5s; /* aparece y se oculta después de 5s */
+  hideCenter 0.5s ease forwards 5s;
 }
 
-/* Responsive */
+/* Contenedor para alertas en columna */
+.alert-wrapper {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 90%;
+  max-width: 500px;
+  pointer-events: none;
+}
+
+/* Alertas de Django apiladas */
+.alert-message {
+  border: none;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 300;
+  width: 100%;
+  animation: slideCenter 0.5s ease forwards, hideCenter 0.5s ease forwards 7s;
+  position: relative;
+  left: 0 !important;
+  transform: none !important;
+  margin: 0;
+}
+
+.alert-message.alert-success {
+  background: linear-gradient(135deg, rgba(0, 156, 92, 0.15) 0%, rgba(0, 122, 71, 0.1) 100%);
+  color: #009c5c;
+  border: 1px solid rgba(0, 156, 92, 0.2);
+}
+
+.alert-message.alert-error {
+  background: linear-gradient(135deg, rgba(199, 36, 36, 0.15) 0%, rgba(163, 22, 22, 0.1) 100%);
+  color: #991b1b;
+  border: 1px solid rgba(197, 34, 34, 0.2);
+}
+
+.alert-message.alert-warning {
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.15) 0%, rgba(255, 179, 0, 0.1) 100%);
+  color: #b38f00;
+  border: 1px solid rgba(255, 204, 0, 0.2);
+}
+
+.alert-message.alert-info {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.15) 0%, rgba(0, 86, 179, 0.1) 100%);
+  color: #0066cc;
+  border: 1px solid rgba(0, 123, 255, 0.2);
+}
+
+/* Responsive mejorado */
 @media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    padding: 20px 0;
+    height: auto;
+    min-height: 100vh;
+  }
+
   .container {
     flex-direction: column;
-    max-width: 450px;
     width: 95%;
+    max-width: 500px;
+    min-height: auto;
+    max-height: none;
+    margin: 0 auto;
   }
 
   .image-side {
-    height: 18px;
+    height: 200px;
     flex: none;
   }
-  
+
+  .image-side img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+  }
+
   .form-side {
     padding: 25px 20px;
+    flex: 1;
   }
 
   .form-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 15px;
   }
 
   h1 {
     font-size: 24px;
+    text-align: center;
+  }
+
+  .logo img {
+    height: 80px;
+  }
+
+  .btn {
+    padding: 14px;
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .input-box input,
+  .input-box select {
+    padding: 14px 40px;
+    font-size: 15px;
+  }
+
+  /* Ajustar posición de íconos en móvil */
+  .password-container .toggle-password {
+    left: 265px !important;
+  }
+
+  /* Alertas en móvil */
+  .alert-wrapper {
+    width: 95%;
+    top: 10px;
+  }
+
+  .alert-message,
+  .password-error {
+    font-size: 14px;
+    padding: 0.75rem 1rem;
+  }
+
+  .links {
+    font-size: 12px;
+  }
+
+  .forgot {
+    font-size: 14px;
+    margin-top: 15px;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    max-width: 350px;
+    width: 98%;
+    max-width: 400px;
   }
-  
+
   .form-side {
     padding: 20px 15px;
   }
-  
-  form {
-    max-width: 100%;
+
+  .logo img {
+    height: 70px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+
+  .btn {
+    font-size: 15px;
+    padding: 12px;
+  }
+
+  .input-box input,
+  .input-box select {
+    font-size: 14px;
+    padding: 12px 40px;
+  }
+
+  .alert-wrapper {
+    width: 90%;
+  }
+
+  .password-error {
+    font-size: 13px;
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    width: 90%;
+    max-width: 800px;
+  }
+
+  .image-side {
+    height: 700px;
+  }
+
+  .form-side {
+    padding: 25px;
   }
 }

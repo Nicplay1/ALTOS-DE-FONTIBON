@@ -29,11 +29,16 @@
         </div>
 
         <!-- mensajes de django -->
-        <div class="alert-container">
+        {% if messages %}
+        <div class="alert-wrapper">
           {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            <div class="alert-message alert-{{ message.tags }}">
+              <i class="fa fa-exclamation-circle"></i>
+              {{ message }}
+            </div>
           {% endfor %}
         </div>
+        {% endif %}
 
         <!-- formulario -->
         <form method="POST" onsubmit="return validarPassword();">
@@ -68,38 +73,34 @@
 
             <!-- Contraseña -->
             <div class="input-box">
-              <div style="position: relative; width: 100%">
-                <i
-                  class="fa fa-lock"
-                  style="
-                    position: absolute;
-                    top: 50%;
-                    left: 10px;
-                    transform: translateY(-50%);
-                  "
-                ></i>
+              <div class="password-container">
+                <i class="fa fa-lock"></i>
                 {{ form.contraseña }}
                 <i
                   class="fa fa-eye toggle-password"
-                  onclick="togglePassword('id_contraseña')"
-                  style="margin: 0 0 0 140px; cursor: pointer;"
+                  onclick="togglePassword('id_contraseña', this)"
                 ></i>
               </div>
             </div>
 
             <!-- Confirmar contraseña -->
             <div class="input-box">
-              <i class="fa fa-lock"></i>
-              {{ form.confirmar_contraseña }}
+              <div class="password-container">
+                <i class="fa fa-lock"></i>
+                {{ form.confirmar_contraseña }}
+                <i
+                  class="fa fa-eye toggle-password"
+                  onclick="togglePassword('id_confirmar_contraseña', this)"
+                ></i>
+              </div>
             </div>
           </div>
-
           <button class="btn" type="submit">Registrarse</button>
         </form>
 
         <div class="links">
-          <a href="#">Términos y condiciones</a>
-          <a href="#">Política de privacidad</a>
+          <a href="{% static 'docs/Terminos_y_Condiciones_AltosDeFontibon.pdf' %}" target="_blank">Términos y condiciones</a>
+          <a href="{% static 'docs/Politica_de_Privacidad_AltosDeFontibon.pdf' %}" target="_blank">Política de privacidad</a>
           <p class="forgot">
             ¿Ya tienes cuenta?
             <a href="{% url 'login' %}">Inicia sesión</a>
@@ -112,6 +113,6 @@
     <div id="passwordHelp" class="password-error">
       La contraseña debe tener más de 5 caracteres y al menos 1 mayúscula.
     </div>
-  <script src="{% static 'js/usuario/register.js' %}"></script>
+    <script src="{% static 'js/usuario/register.js' %}"></script>
   </body>
 </html>

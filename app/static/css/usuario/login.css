@@ -98,6 +98,22 @@ form {
   
 }
 
+.fa {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  margin: 0 0 0 200px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.fa:hover {
+  color: #009c5c;
+}
+
+.input-box input:focus {
+  border-color: #009c5c;
+}
 
 .btn {
   width: 100%;
@@ -207,6 +223,7 @@ form {
   z-index: 2000;
   animation: slideCenter 0.5s ease forwards, hideCenter 0.5s ease forwards 7s;
   font-size: 18px;
+
 }
 
 .success {
@@ -228,6 +245,7 @@ form {
   transform: translateX(-50%);
   z-index: 2000;
   animation: slideCenter 0.5s ease forwards, hideCenter 0.5s ease forwards 7s;
+  
 }
 
   /* Animación para que baje desde arriba */
