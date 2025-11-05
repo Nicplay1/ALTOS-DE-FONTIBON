@@ -144,6 +144,15 @@ EMAIL_HOST_USER = 'apikey'  # Esto siempre es literal 'apikey'
 EMAIL_HOST_PASSWORD = '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'  # La clave que copiaste
 DEFAULT_FROM_EMAIL = 'nicolasballesteros900@gmail.com'  # Correo verificado en SendGrid
 
+
+# Configuración de Celery
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Bogota'
+
 # 🟢 En Render, solo mostrar el correo en consola (no enviarlo)
 
 

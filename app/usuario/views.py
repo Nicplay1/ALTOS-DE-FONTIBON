@@ -15,17 +15,11 @@ def register_view(request):
     if request.method == "POST":
         form = RegisterForm(request.POST)
         if form.is_valid():
-            numero_documento = form.cleaned_data['numero_documento']
-            if Usuario.objects.filter(numero_documento=numero_documento).exists():
-                messages.error(request, "El documento ya está registrado.")
-            else:
-                usuario = form.save(commit=False)
-                usuario.contraseña = make_password(form.cleaned_data['contraseña'])
-                usuario.save()
-                messages.success(request, "Usuario registrado exitosamente. Ahora puede iniciar sesión.")
-                return redirect("login")
-        else:
-            messages.error(request, "Error en el registro. Verifique los datos.")
+            usuario = form.save(commit=False)
+            usuario.contraseña = make_password(form.cleaned_data['contraseña'])
+            usuario.save()
+            messages.success(request, "Usuario registrado exitosamente. Ahora puede iniciar sesión.")
+            return redirect("login")
     else:
         form = RegisterForm()
     return render(request, "usuario/register.html", {"form": form})
@@ -58,9 +52,9 @@ def login_view(request):
                     elif usuario.id_rol_id == 5:
                         return redirect("asistente_home")
                 else:
-                    messages.error(request, "❌ Contraseña incorrecta.")
+                    messages.error(request, " Contraseña incorrecta.")
             except Usuario.DoesNotExist:
-                messages.error(request, "❌ Documento no registrado.")
+                messages.error(request, " Documento no registrado.")
     else:
         form = LoginForm()
 

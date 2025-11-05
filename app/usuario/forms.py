@@ -126,11 +126,19 @@ class RegisterForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        numero_documento = cleaned_data.get("numero_documento")
+        correo = cleaned_data.get("correo")
         contraseña = cleaned_data.get("contraseña")
         confirmar_contraseña = cleaned_data.get("confirmar_contraseña")
 
+        if Usuario.objects.filter(numero_documento=numero_documento).exists():
+            self.add_error("numero_documento", "Este número de documento ya está registrado.")
+        
+        if Usuario.objects.filter(correo=correo).exists():
+            self.add_error("correo", "Este correo ya está registrado.")
+        
         if contraseña and confirmar_contraseña and contraseña != confirmar_contraseña:
-            raise ValidationError("Las contraseñas no coinciden.")
+            self.add_error("confirmar_contraseña", "Las contraseñas no coinciden.")
 
         return cleaned_data
 

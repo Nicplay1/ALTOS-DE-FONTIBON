@@ -425,9 +425,9 @@ def sorteo_vehiculos(request, sorteo_id):
                             f"Parqueadero: {parqueadero.numero_parqueadero}\n"
                             f"Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}"
                         ),
-                        from_email="altosdefontibon.cr@gmail.com",
+                        from_email="nicolasballesteros900@gmail.com",
                         recipient_list=[ganador_residente.cod_usuario.correo],
-                        fail_silently=True,
+                        fail_silently=False,
                     )
 
                 perdedores = residentes.exclude(id_detalle_residente=ganador_residente.id_detalle_residente)
@@ -439,9 +439,9 @@ def sorteo_vehiculos(request, sorteo_id):
                                 f"Estimado(a) {p.cod_usuario.nombres} {p.cod_usuario.apellidos},\n\n"
                                 "Gracias por participar. En esta ocasión no resultaste ganador."
                             ),
-                            from_email="altosdefontibon.cr@gmail.com",
+                            from_email="nicolasballesteros900@gmail.com",
                             recipient_list=[p.cod_usuario.correo],
-                            fail_silently=True,
+                            fail_silently=False,
                         )
 
                 messages.success(request, "Sorteo realizado correctamente.")

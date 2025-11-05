@@ -189,6 +189,7 @@ def mis_reservas(request):
                 fail_silently=True,
             )
 
+
             request.session[clave_sesion_correo] = True
 
     return render(

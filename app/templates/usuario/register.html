@@ -29,17 +29,20 @@
         </div>
 
         <!-- mensajes de django -->
-        {% if messages %}
+
+        
+       {% if form.errors %}
         <div class="alert-wrapper">
-          {% for message in messages %}
-            <div class="alert-message alert-{{ message.tags }}">
-              <i class="fa fa-exclamation-circle"></i>
-              {{ message }}
-            </div>
+          {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+              <div class="alert-message alert-error">
+                <i class="fa fa-exclamation-circle"></i>
+                {{ error }}
+              </div>
+            {% endfor %}
           {% endfor %}
         </div>
         {% endif %}
-
         <!-- formulario -->
         <form method="POST" onsubmit="return validarPassword();">
           {% csrf_token %}
