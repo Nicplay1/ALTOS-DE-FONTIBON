@@ -184,7 +184,7 @@ def mis_reservas(request):
             send_mail(
                 subject="Recordatorio de reservas para mañana",
                 message=cuerpo,
-                from_email=settings.DEFAULT_FROM_EMAIL,
+                from_email="altosdefontibon.cr@gmail.com",
                 recipient_list=[usuario_actual.correo],
                 fail_silently=True,
             )
@@ -239,6 +239,13 @@ def detalles(request, vehiculo_id):
     
     archivos_ids = [archivo.id_tipo_archivo.pk for archivo in archivos]
 
+    # 🔹 Verificar si algún documento está por vencer (1 día antes)
+    alerta_vencimiento = []
+    fecha_alerta = now().date() + timedelta(days=1)  # 1 día antes de vencer
+    for archivo in archivos:
+        if archivo.fecha_vencimiento and archivo.fecha_vencimiento <= fecha_alerta:
+            alerta_vencimiento.append(f"El documento '{archivo.id_tipo_archivo}' vence el {archivo.fecha_vencimiento}")
+
     if request.method == 'POST':
         tipo_archivo_id = request.POST.get('id_tipo_archivo')
         archivo_existente = archivos.filter(id_tipo_archivo_id=tipo_archivo_id).first()
@@ -264,7 +271,8 @@ def detalles(request, vehiculo_id):
         'vehiculo': vehiculo,
         'archivos': archivos,
         'form': form,
-        'archivos_ids_json': archivos_ids
+        'archivos_ids_json': archivos_ids,
+        'alerta_vencimiento': alerta_vencimiento,  # Lista de alertas
     }
     return render(request, 'residente/vehiculos/detalles.html', context)
 

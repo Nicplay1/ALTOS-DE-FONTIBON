@@ -27,6 +27,8 @@ def panel_general_admin(request):
     return render(request, "administrador/panel.html")
 
 
+@rol_requerido([3])
+@login_requerido
 def gestionar_usuarios(request):
     query = request.GET.get("q", "")
     usuarios = Usuario.objects.select_related("id_rol").all()
@@ -205,7 +207,6 @@ def lista_vehiculos(request):
     return render(request, 'administrador/vehiculos/lista_vehiculos.html', context)
 
 # Vista de detalle de un vehículo y edición de 'documentos'
-
 
 
 @rol_requerido([3])
@@ -505,7 +506,7 @@ def sorteo_vehiculos(request, sorteo_id):
                                 f"Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}\n\n"
                                 "Atentamente,\nAdministración Altos de Fontibón"
                             ),
-                            from_email="nicolasballesteros900@gmail.com",
+                            from_email="altosdefontibon.cr@gmail.com",
                             recipient_list=[ganador_residente.cod_usuario.correo],
                             fail_silently=False,
                         )
@@ -527,7 +528,7 @@ def sorteo_vehiculos(request, sorteo_id):
                                     "Te invitamos a participar en futuros sorteos.\n\n"
                                     "Atentamente,\nAdministración Altos de Fontibón"
                                 ),
-                                from_email="nicolasballesteros900@gmail.com",
+                                from_email="altosdefontibon.cr@gmail.com",
                                 recipient_list=[correo_perdedor],
                                 fail_silently=True,
                             )

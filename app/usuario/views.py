@@ -174,7 +174,7 @@ def solicitar_reset(request):
             send_mail(
                 subject="Recuperar contraseña - Altos de Fontibón",
                 message=f"Hola {usuario.nombres}, usa este enlace para restablecer tu contraseña:\n{reset_url}",
-                from_email="noreply@tusitio.com",
+                from_email="altosdefontibon.cr@gmail.com",
                 recipient_list=[usuario.correo],
             )
 

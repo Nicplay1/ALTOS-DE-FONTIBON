@@ -1,8 +1,11 @@
 from django.core.management.base import BaseCommand
-from usuario.models import Rol, ZonaComun, TipoArchivo, Parqueadero
+from vigilante.models import Rol, ZonaComun, TipoArchivo, Parqueadero, Usuario
+from django.utils import timezone
+import uuid
+from datetime import timedelta
 
 class Command(BaseCommand):
-    help = "Inserta datos iniciales en las tablas rol, zona_comun, tipo_archivo y parqueadero"
+    help = "Inserta datos iniciales en las tablas rol, zona_comun, tipo_archivo, parqueadero y usuario admin"
 
     def handle(self, *args, **options):
         # ------------------ ROL ------------------
@@ -95,5 +98,26 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"✅ Parqueadero '{num}' creado"))
             else:
                 self.stdout.write(f"⚠️ Parqueadero '{num}' ya existía")
+
+        # ------------------ USUARIO ADMIN ------------------
+        rol_admin = Rol.objects.get(id_rol=3)  # Admin
+        admin_usuario, created = Usuario.objects.get_or_create(
+            numero_documento="admin_usuario",
+            defaults={
+                "nombres": "Administrador",
+                "apellidos": "Principal",
+                "tipo_documento": "CC",
+                "correo": "admin@altosdefontibon.com",
+                "telefono": "1234567" + "89012",  # 7 dígitos + 5 extra = 12
+                "celular": "3216549870",          # inventado
+                "contraseña": "administradro.2025$",
+                "id_rol": rol_admin,
+                "estado": "Activo",
+            }
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS("✅ Usuario administrador creado correctamente"))
+        else:
+            self.stdout.write("⚠️ Usuario administrador ya existía")
 
         self.stdout.write(self.style.SUCCESS("\n🎉 Datos iniciales cargados correctamente"))
