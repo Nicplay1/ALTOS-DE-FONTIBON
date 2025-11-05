@@ -137,12 +137,12 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # 📧 CONFIGURACIÓN DE CORREO
 # ---------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
-EMAIL_HOST_PASSWORD = 'vdvxmoqpauqtzgiv'  # sin espacios
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_USER = 'apikey'  # Literalmente
+EMAIL_HOST_PASSWORD = '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'  # Tu API Key de SendGrid
+DEFAULT_FROM_EMAIL = 'altosdefontibon.cr@gmail.com'
 
 
 # Configuración de Celery

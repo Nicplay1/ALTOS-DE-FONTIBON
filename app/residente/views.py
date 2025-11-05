@@ -365,9 +365,9 @@ def lista_sorteos(request):
 
     # Filtrar sorteos según tipo de residente
     if detalle_residente.propietario:
-        sorteos = Sorteo.objects.filter(tipo_residente_propietario=True).order_by('-fecha_inicio')
+        sorteos = Sorteo.objects.filter(tipo_residente_propietario=True).order_by('-id_sorteo')
     else:
-        sorteos = Sorteo.objects.filter(tipo_residente_propietario=False).order_by('-fecha_inicio')
+        sorteos = Sorteo.objects.filter(tipo_residente_propietario=False).order_by('-id_sorteo')
 
     sorteos_info = []
     hoy = date.today()
