@@ -142,7 +142,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'  # Siempre literal
 EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
-DEFAULT_FROM_EMAIL = 'altosdefontibon.cr@gmail.com'
+DEFAULT_FROM_EMAIL = 'nicolasballesteros900@gmail.com'
 
 
 # Configuración de Celery

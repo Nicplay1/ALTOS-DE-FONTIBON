@@ -493,7 +493,6 @@ Administración Altos de Fontibón
 
 
 
-
 @rol_requerido([3])
 @login_requerido
 def listar_novedades(request):
