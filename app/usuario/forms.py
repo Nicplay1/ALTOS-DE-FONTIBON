@@ -161,6 +161,12 @@ class UsuarioUpdateForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
+    def clean_correo(self):
+        correo = self.cleaned_data.get('correo')
+        if Usuario.objects.exclude(pk=self.instance.pk).filter(correo=correo).exists():
+            raise forms.ValidationError("Este correo ya está registrado.")
+        return correo
+
     def save(self, commit=True):
         usuario = super().save(commit=False)
         nueva_contrasena = self.cleaned_data.get('contraseña')
