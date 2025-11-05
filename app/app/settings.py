@@ -141,9 +141,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'apikey'  # Literal, no lo cambies
-EMAIL_HOST_PASSWORD = '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'
-DEFAULT_FROM_EMAIL = 'nicolasballesteros900@gmail.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'apikey')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'nicolasballesteros900@gmail.com')
 
 
 # Configuración de Celery
