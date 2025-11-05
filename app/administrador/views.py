@@ -346,27 +346,100 @@ def sorteos_list_create(request):
 
 @rol_requerido([3])
 @login_requerido
-def sorteo_vehiculos(request, sorteo_id):
-    sorteo = get_object_or_404(Sorteo, id_sorteo=sorteo_id)
+def activar_validacion(request):
+    proceso, created = ProcesoValidacion.objects.get_or_create(id=1)
+    proceso.activo = True
+    proceso.save()
 
-    # Función auxiliar para enviar correos con SendGrid API
-    def enviar_correo(destinatario, asunto, mensaje):
-        url = "https://api.sendgrid.com/v3/mail/send"
-        data = {
-            "personalizations": [{"to": [{"email": destinatario}]}],
-            "from": {"email": settings.DEFAULT_FROM_EMAIL},
-            "subject": asunto,
-            "content": [{"type": "text/plain", "value": mensaje}]
-        }
-        headers = {
-            "Authorization": f"Bearer {settings.EMAIL_HOST_PASSWORD}",
-            "Content-Type": "application/json"
-        }
-        try:
-            response = requests.post(url, json=data, headers=headers, timeout=10)
-            print(f"📧 Correo a {destinatario} → {response.status_code}")
-        except Exception as e:
-            print(f"❌ Error enviando correo a {destinatario}: {e}")
+    # 🔹 Actualizar SOLO vehículos que no han sido modificados manualmente
+    # Podemos asumir que si un vehículo tiene documentos=False pero tiene todos los docs,
+    # es porque el admin lo estableció manualmente y no queremos sobrescribirlo
+    documentos_requeridos = ['SOAT', 'Tarjeta de propiedad', 'Técnico-mecánica', 'Licencia', 'Identidad']
+    
+    # Obtener todos los vehículos
+    vehiculos = VehiculoResidente.objects.all()
+    vehiculos_actualizados = 0
+
+    for vehiculo in vehiculos:
+        documentos_subidos = ArchivoVehiculo.objects.filter(
+            idVehiculo=vehiculo,
+            idTipoArchivo__tipo_documento__in=documentos_requeridos
+        ).values_list('idTipoArchivo__tipo_documento', flat=True).distinct()
+        
+        tiene_todos = set(documentos_requeridos).issubset(set(documentos_subidos))
+        
+        # Solo actualizar si tiene todos los documentos Y actualmente está en False
+        # Esto respeta la decisión manual del administrador si estableció en False
+        if tiene_todos and not vehiculo.documentos:
+            vehiculo.documentos = True
+            vehiculo.save()
+            vehiculos_actualizados += 1
+
+    messages.success(request, f"Proceso de validación activado. {vehiculos_actualizados} vehículos actualizados automáticamente.")
+    return redirect('lista_vehiculos')
+
+
+
+
+@rol_requerido([3])
+@login_requerido
+def finalizar_validacion(request):
+    proceso, created = ProcesoValidacion.objects.get_or_create(id=1)
+    proceso.activo = False
+    proceso.save()
+    messages.success(request, "Proceso de validación finalizado.")
+    return redirect('lista_vehiculos')
+
+
+
+@rol_requerido([3])
+@login_requerido
+def sorteos_list_create(request):
+    sorteos = Sorteo.objects.all().order_by('-fecha_creado')
+
+    if request.method == 'POST':
+        # Crear sorteo
+        if 'crear_sorteo' in request.POST:
+            form = SorteoForm(request.POST)
+            if form.is_valid():
+                fecha_sorteo = form.cleaned_data['fecha_inicio']
+                if fecha_sorteo < timezone.now().date():
+                    messages.error(request, "No puedes crear un sorteo en una fecha pasada.")
+                else:
+                    sorteo = form.save()
+                    messages.success(request, "Sorteo fue creado correctamente.")
+                    return redirect('sorteos_list_create')
+
+        # Liberar parqueaderos propietarios
+        elif 'liberar_propietarios' in request.POST:
+            parqueaderos = Parqueadero.objects.filter(comunal=True, estado=True)
+            parqueaderos.update(estado=False)
+            messages.success(request, "Se liberaron todos los parqueaderos de propietarios.")
+
+        # Liberar parqueaderos arrendatarios
+        elif 'liberar_arrendatarios' in request.POST:
+            parqueaderos = Parqueadero.objects.filter(comunal=False, estado=True)
+            parqueaderos.update(estado=False)
+            messages.success(request, "Se liberaron todos los parqueaderos de arrendatarios.")
+
+        return redirect('sorteos_list_create')
+
+    else:
+        form = SorteoForm()
+
+    context = {
+        'sorteos': sorteos,
+        'form': form,
+    }
+    return render(request, 'administrador/sorteo/sorteos.html', context)
+
+
+
+@rol_requerido([3])
+@login_requerido
+def sorteo_vehiculos(request, sorteo_id):
+    # Obtener el sorteo
+    sorteo = get_object_or_404(Sorteo, id_sorteo=sorteo_id)
 
     # Filtrar residentes según tipo de sorteo
     if sorteo.tipo_residente_propietario is True:
@@ -379,118 +452,118 @@ def sorteo_vehiculos(request, sorteo_id):
         residentes = DetalleResidente.objects.all()
         parqueaderos = Parqueadero.objects.filter(estado=False)
 
-    # 🔹 Lógica diferente si el sorteo ya se realizó
-    if sorteo.estado:
-        ganadores_qs = GanadorSorteo.objects.filter(id_sorteo=sorteo).select_related('id_detalle_residente')
-        ganadores_ids = ganadores_qs.values_list('id_detalle_residente', flat=True)
-        participantes_ids = list(ganadores_ids)
+    # 🔹 Filtrar usuarios con vehículos válidos
+    usuarios_con_vehiculo = VehiculoResidente.objects.filter(documentos=True).values_list('cod_usuario', flat=True)
+    residentes = residentes.filter(cod_usuario__in=usuarios_con_vehiculo)
 
-        posibles_perdedores = DetalleResidente.objects.filter(
-            propietario=sorteo.tipo_residente_propietario
-        ).exclude(id_detalle_residente__in=ganadores_ids)
-
-        for p in posibles_perdedores:
-            if VehiculoResidente.objects.filter(cod_usuario=p.cod_usuario).exists():
-                participantes_ids.append(p.id_detalle_residente)
-
-        residentes = DetalleResidente.objects.filter(id_detalle_residente__in=participantes_ids)
-    else:
-        usuarios_con_vehiculo = VehiculoResidente.objects.filter(documentos=True).values_list('cod_usuario', flat=True)
-        residentes = residentes.filter(cod_usuario__in=usuarios_con_vehiculo)
-
+    # 🔹 Crear lista de tuplas (residente, vehículo)
     residentes_con_vehiculo = [
-        (residente, VehiculoResidente.objects.filter(cod_usuario=residente.cod_usuario).first())
+        (residente, VehiculoResidente.objects.filter(cod_usuario=residente.cod_usuario, documentos=True).first())
         for residente in residentes
     ]
 
-    # 🔹 Realizar el sorteo
+    # 🔹 Realizar sorteo (solo si no está realizado)
     if request.method == 'POST' and 'realizar_sorteo' in request.POST:
         if sorteo.estado:
-            messages.warning(request, "Este sorteo ya fue realizado.")
+            messages.warning(request, " Este sorteo ya fue realizado. No se puede volver a ejecutar.")
         elif not residentes.exists():
-            messages.error(request, "No hay residentes con vehículo válido para participar.")
+            messages.error(request, "No hay residentes con vehículo válido para participar en el sorteo.")
         elif not parqueaderos.exists():
-            messages.error(request, "No hay parqueaderos disponibles.")
+            messages.error(request, "No hay parqueaderos disponibles para el sorteo.")
         else:
             ganador_residente = random.choice(list(residentes))
             parqueadero = random.choice(list(parqueaderos))
 
             if GanadorSorteo.objects.filter(id_sorteo=sorteo, id_detalle_residente=ganador_residente).exists():
-                messages.warning(request, f"El residente {ganador_residente.cod_usuario.nombres} ya ganó.")
+                messages.warning(request, f"El residente {ganador_residente.cod_usuario.nombres} ya ganó en este sorteo.")
             else:
-                GanadorSorteo.objects.create(
+                ganador = GanadorSorteo.objects.create(
                     id_sorteo=sorteo,
                     id_detalle_residente=ganador_residente,
                     id_parqueadero=parqueadero
                 )
                 parqueadero.estado = True
                 parqueadero.save()
+
+                # 🔹 Actualizar el estado del sorteo a True
                 sorteo.estado = True
                 sorteo.save()
 
-                # Correo al ganador 🏆
-                vehiculo = VehiculoResidente.objects.filter(cod_usuario=ganador_residente.cod_usuario).first()
+                vehiculo = VehiculoResidente.objects.filter(
+                    cod_usuario=ganador_residente.cod_usuario, documentos=True
+                ).first()
+
+                # Enviar correo al ganador
                 if ganador_residente.cod_usuario.correo:
-                    enviar_correo(
-                        ganador_residente.cod_usuario.correo,
-                        "Ganador de sorteo - Altos de Fontibón",
-                        f"""
-Estimado(a) {ganador_residente.cod_usuario.nombres} {ganador_residente.cod_usuario.apellidos},
-
-¡Felicidades! Has ganado un parqueadero.
-
-📍 Parqueadero: {parqueadero.numero_parqueadero}
-🚗 Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}
-
-Atentamente,
-Administración Altos de Fontibón
-                        """
-                    )
-
-                # Correos a los demás participantes 🙏
-                perdedores = residentes.exclude(id_detalle_residente=ganador_residente.id_detalle_residente)
-                for p in perdedores:
-                    if p.cod_usuario.correo:
-                        enviar_correo(
-                            p.cod_usuario.correo,
-                            "Sorteo de parqueaderos - Altos de Fontibón",
-                            f"""
-Estimado(a) {p.cod_usuario.nombres} {p.cod_usuario.apellidos},
-
-Gracias por participar en el sorteo de parqueaderos. 
-En esta ocasión no resultaste ganador, pero podrás participar en futuras oportunidades.
-
-Atentamente,
-Administración Altos de Fontibón
-                            """
+                    try:
+                        send_mail(
+                            subject="Ganador de sorteo - Altos de Fontibón",
+                            message=(
+                                f"Estimado(a) {ganador_residente.cod_usuario.nombres} {ganador_residente.cod_usuario.apellidos},\n\n"
+                                f"¡Felicitaciones! Has resultado ganador en el sorteo de parqueaderos.\n"
+                                f"Parqueadero asignado: {parqueadero.numero_parqueadero}\n"
+                                f"Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}\n\n"
+                                "Atentamente,\nAdministración Altos de Fontibón"
+                            ),
+                            from_email="altosdefontibon.cr@gmail.com",
+                            recipient_list=[ganador_residente.cod_usuario.correo],
+                            fail_silently=False,
                         )
+                    except Exception as e:
+                        print(f"Error enviando correo: {e}")
 
-                messages.success(request, "Sorteo realizado correctamente.")
+                # 📩 Enviar correo a los que no ganaron
+                perdedores = residentes.exclude(id_detalle_residente=ganador_residente.id_detalle_residente)
+                for perdedor in perdedores:
+                    correo_perdedor = perdedor.cod_usuario.correo
+                    if correo_perdedor:
+                        try:
+                            send_mail(
+                                subject="Sorteo de parqueaderos - Altos de Fontibón",
+                                message=(
+                                    f"Estimado(a) {perdedor.cod_usuario.nombres} {perdedor.cod_usuario.apellidos},\n\n"
+                                    "Gracias por participar en el sorteo de parqueaderos.\n"
+                                    "Lamentablemente en esta ocasión no fuiste ganador.\n\n"
+                                    "Te invitamos a participar en futuros sorteos.\n\n"
+                                    "Atentamente,\nAdministración Altos de Fontibón"
+                                ),
+                                from_email="altosdefontibon.cr@gmail.com",
+                                recipient_list=[correo_perdedor],
+                                fail_silently=True,
+                            )
+                        except Exception as e:
+                            print(f"Error enviando correo a perdedor: {e}")
+
+                messages.success(request, " ¡Sorteo realizado! Los participantes han sido notificados por correo.")
                 return redirect('sorteo_vehiculos', sorteo_id=sorteo.id_sorteo)
 
+    # =======================
+    # 🔹 Mostrar ganadores y perdedores si el sorteo ya se realizó
+    # =======================
     ganadores_con_vehiculo, perdedores_con_vehiculo = [], []
+
     if sorteo.estado:
         ganadores_qs = GanadorSorteo.objects.filter(id_sorteo=sorteo).select_related('id_detalle_residente', 'id_parqueadero')
         ganadores_con_vehiculo = [
-            (g, VehiculoResidente.objects.filter(cod_usuario=g.id_detalle_residente.cod_usuario).first())
+            (g, VehiculoResidente.objects.filter(cod_usuario=g.id_detalle_residente.cod_usuario, documentos=True).first())
             for g in ganadores_qs
         ]
+
         ganadores_ids = ganadores_qs.values_list('id_detalle_residente', flat=True)
         perdedores = residentes.exclude(id_detalle_residente__in=ganadores_ids)
         perdedores_con_vehiculo = [
-            (p, VehiculoResidente.objects.filter(cod_usuario=p.cod_usuario).first())
+            (p, VehiculoResidente.objects.filter(cod_usuario=p.cod_usuario, documentos=True).first())
             for p in perdedores
         ]
 
     context = {
         'sorteo': sorteo,
-        'residentes_con_vehiculo': residentes_con_vehiculo,
+        'residentes_con_vehiculo': residentes_con_vehiculo,  # siempre disponible
         'parqueaderos': parqueaderos,
         'ganadores_con_vehiculo': ganadores_con_vehiculo,
         'perdedores_con_vehiculo': perdedores_con_vehiculo,
     }
     return render(request, 'administrador/sorteo/sorteo_vehiculos.html', context)
-
 
 
 @rol_requerido([3])
