@@ -17,6 +17,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_date
+from django.conf import settings
+import requests
 
 
 @rol_requerido([3])
@@ -347,6 +349,25 @@ def sorteos_list_create(request):
 def sorteo_vehiculos(request, sorteo_id):
     sorteo = get_object_or_404(Sorteo, id_sorteo=sorteo_id)
 
+    # Función auxiliar para enviar correos con SendGrid API
+    def enviar_correo(destinatario, asunto, mensaje):
+        url = "https://api.sendgrid.com/v3/mail/send"
+        data = {
+            "personalizations": [{"to": [{"email": destinatario}]}],
+            "from": {"email": settings.DEFAULT_FROM_EMAIL},
+            "subject": asunto,
+            "content": [{"type": "text/plain", "value": mensaje}]
+        }
+        headers = {
+            "Authorization": f"Bearer {settings.EMAIL_HOST_PASSWORD}",
+            "Content-Type": "application/json"
+        }
+        try:
+            response = requests.post(url, json=data, headers=headers, timeout=10)
+            print(f"📧 Correo a {destinatario} → {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error enviando correo a {destinatario}: {e}")
+
     # Filtrar residentes según tipo de sorteo
     if sorteo.tipo_residente_propietario is True:
         residentes = DetalleResidente.objects.filter(propietario=True)
@@ -360,14 +381,10 @@ def sorteo_vehiculos(request, sorteo_id):
 
     # 🔹 Lógica diferente si el sorteo ya se realizó
     if sorteo.estado:
-        # Mostrar los mismos participantes que originalmente participaron
         ganadores_qs = GanadorSorteo.objects.filter(id_sorteo=sorteo).select_related('id_detalle_residente')
         ganadores_ids = ganadores_qs.values_list('id_detalle_residente', flat=True)
-
-        # Recuperar los residentes que participaron (ganadores + perdedores)
         participantes_ids = list(ganadores_ids)
 
-        # Buscar perdedores que participaron
         posibles_perdedores = DetalleResidente.objects.filter(
             propietario=sorteo.tipo_residente_propietario
         ).exclude(id_detalle_residente__in=ganadores_ids)
@@ -376,20 +393,17 @@ def sorteo_vehiculos(request, sorteo_id):
             if VehiculoResidente.objects.filter(cod_usuario=p.cod_usuario).exists():
                 participantes_ids.append(p.id_detalle_residente)
 
-        # Filtrar los residentes que participaron, aunque ya no tengan documentos válidos
         residentes = DetalleResidente.objects.filter(id_detalle_residente__in=participantes_ids)
     else:
-        # 🔹 Si aún no se ha hecho el sorteo, solo se muestran los que tienen documentos válidos
         usuarios_con_vehiculo = VehiculoResidente.objects.filter(documentos=True).values_list('cod_usuario', flat=True)
         residentes = residentes.filter(cod_usuario__in=usuarios_con_vehiculo)
 
-    # 🔹 Crear lista de tuplas (residente, vehículo)
     residentes_con_vehiculo = [
         (residente, VehiculoResidente.objects.filter(cod_usuario=residente.cod_usuario).first())
         for residente in residentes
     ]
 
-    # 🔹 Realizar el sorteo (solo si no está realizado)
+    # 🔹 Realizar el sorteo
     if request.method == 'POST' and 'realizar_sorteo' in request.POST:
         if sorteo.estado:
             messages.warning(request, "Este sorteo ya fue realizado.")
@@ -414,40 +428,46 @@ def sorteo_vehiculos(request, sorteo_id):
                 sorteo.estado = True
                 sorteo.save()
 
-                # Correo a ganador y perdedores
+                # Correo al ganador 🏆
                 vehiculo = VehiculoResidente.objects.filter(cod_usuario=ganador_residente.cod_usuario).first()
                 if ganador_residente.cod_usuario.correo:
-                    send_mail(
-                        subject="Ganador de sorteo - Altos de Fontibón",
-                        message=(
-                            f"Estimado(a) {ganador_residente.cod_usuario.nombres} {ganador_residente.cod_usuario.apellidos},\n\n"
-                            f"¡Felicidades! Has ganado un parqueadero.\n"
-                            f"Parqueadero: {parqueadero.numero_parqueadero}\n"
-                            f"Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}"
-                        ),
-                        from_email="nicolasballesteros900@gmail.com",
-                        recipient_list=[ganador_residente.cod_usuario.correo],
-                        fail_silently=False,
+                    enviar_correo(
+                        ganador_residente.cod_usuario.correo,
+                        "Ganador de sorteo - Altos de Fontibón",
+                        f"""
+Estimado(a) {ganador_residente.cod_usuario.nombres} {ganador_residente.cod_usuario.apellidos},
+
+¡Felicidades! Has ganado un parqueadero.
+
+📍 Parqueadero: {parqueadero.numero_parqueadero}
+🚗 Vehículo: {vehiculo.placa if vehiculo else 'No registrado'}
+
+Atentamente,
+Administración Altos de Fontibón
+                        """
                     )
 
+                # Correos a los demás participantes 🙏
                 perdedores = residentes.exclude(id_detalle_residente=ganador_residente.id_detalle_residente)
                 for p in perdedores:
                     if p.cod_usuario.correo:
-                        send_mail(
-                            subject="Sorteo de parqueaderos - Altos de Fontibón",
-                            message=(
-                                f"Estimado(a) {p.cod_usuario.nombres} {p.cod_usuario.apellidos},\n\n"
-                                "Gracias por participar. En esta ocasión no resultaste ganador."
-                            ),
-                            from_email="nicolasballesteros900@gmail.com",
-                            recipient_list=[p.cod_usuario.correo],
-                            fail_silently=False,
+                        enviar_correo(
+                            p.cod_usuario.correo,
+                            "Sorteo de parqueaderos - Altos de Fontibón",
+                            f"""
+Estimado(a) {p.cod_usuario.nombres} {p.cod_usuario.apellidos},
+
+Gracias por participar en el sorteo de parqueaderos. 
+En esta ocasión no resultaste ganador, pero podrás participar en futuras oportunidades.
+
+Atentamente,
+Administración Altos de Fontibón
+                            """
                         )
 
                 messages.success(request, "Sorteo realizado correctamente.")
                 return redirect('sorteo_vehiculos', sorteo_id=sorteo.id_sorteo)
 
-    # 🔹 Mostrar ganadores y perdedores si el sorteo ya fue hecho
     ganadores_con_vehiculo, perdedores_con_vehiculo = [], []
     if sorteo.estado:
         ganadores_qs = GanadorSorteo.objects.filter(id_sorteo=sorteo).select_related('id_detalle_residente', 'id_parqueadero')
@@ -470,6 +490,7 @@ def sorteo_vehiculos(request, sorteo_id):
         'perdedores_con_vehiculo': perdedores_con_vehiculo,
     }
     return render(request, 'administrador/sorteo/sorteo_vehiculos.html', context)
+
 
 
 
