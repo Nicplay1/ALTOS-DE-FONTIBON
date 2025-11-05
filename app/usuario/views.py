@@ -27,6 +27,7 @@ def register_view(request):
     return render(request, "usuario/register.html", {"form": form})
 
 
+
 def login_view(request):
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -37,22 +38,28 @@ def login_view(request):
             try:
                 usuario = Usuario.objects.get(numero_documento=numero_documento)
 
-                # Verificar bloqueo
-                if usuario.bloqueado_hasta and usuario.bloqueado_hasta > timezone.now():
-                    tiempo_restante = (usuario.bloqueado_hasta - timezone.now()).seconds // 60
-                    messages.error(request, f"Usuario bloqueado. Intenta de nuevo en {tiempo_restante} minutos.")
-                    return render(request, "usuario/login.html", {"form": form})
+                # Revisar bloqueo temporal en sesión
+                bloqueado = request.session.get(f"bloqueo_{usuario.id_usuario}")
+                if bloqueado:
+                    tiempo_fin = bloqueado
+                    if timezone.now() < tiempo_fin:
+                        minutos_restantes = int((tiempo_fin - timezone.now()).total_seconds() / 60)
+                        messages.error(request, f"Usuario bloqueado. Intenta de nuevo en {minutos_restantes} minutos.")
+                        return render(request, "usuario/login.html", {"form": form})
+                    else:
+                        # Desbloquear después de 10 min
+                        request.session.pop(f"bloqueo_{usuario.id_usuario}", None)
+                        usuario.intentos_fallidos = 0
+                        usuario.save()
 
                 if check_password(contraseña, usuario.contraseña):
-                    # Resetear intentos fallidos
                     usuario.intentos_fallidos = 0
-                    usuario.bloqueado_hasta = None
                     usuario.save()
-
                     request.session['usuario_id'] = usuario.id_usuario
                     request.session['rol_id'] = usuario.id_rol_id
                     messages.success(request, f"Bienvenido {usuario.nombres} {usuario.apellidos}!")
 
+                    # Redirecciones según rol
                     if usuario.id_rol_id == 1:
                         return redirect("index")
                     elif usuario.id_rol_id == 2:
@@ -66,11 +73,13 @@ def login_view(request):
                 else:
                     usuario.intentos_fallidos += 1
                     if usuario.intentos_fallidos >= 5:
-                        usuario.bloqueado_hasta = timezone.now() + timedelta(minutes=10)  # bloquea 10 minutos
+                        # Bloqueo 10 minutos en sesión
+                        request.session[f"bloqueo_{usuario.id_usuario}"] = timezone.now() + timedelta(minutes=10)
                         messages.error(request, "Usuario bloqueado por demasiados intentos fallidos. Intenta en 10 minutos.")
                     else:
                         messages.error(request, f"Contraseña incorrecta. Intento {usuario.intentos_fallidos}/5.")
                     usuario.save()
+
             except Usuario.DoesNotExist:
                 messages.error(request, "Documento no registrado.")
     else:
