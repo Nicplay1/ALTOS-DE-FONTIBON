@@ -13,6 +13,7 @@ import datetime
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.template.loader import render_to_string
 
 def register_view(request):
     if request.method == "POST":
@@ -22,12 +23,28 @@ def register_view(request):
             usuario.contraseña = make_password(form.cleaned_data['contraseña'])
             usuario.save()
 
-            # ✅ Enviar actualización por WebSocket
+            # >>> Envío al grupo de canales para notificar al admin
+            # Renderizamos la tabla completa actualizada y la enviamos por WS
+            from usuario.models import Rol, Usuario  # o donde tengas Rol
+              # ajusta import según tu proyecto
+
+            html_tabla = render_to_string("administrador/usuario/tabla_usuarios.html", {
+                "usuarios": Usuario.objects.select_related("id_rol").all(),
+                "roles": Rol.objects.all()
+            }, request=request)  # request opcional pero útil para context processors
+
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                "usuarios_group",
-                {"type": "enviar_lista_usuarios"}
+                "admin_updates",
+                {
+                    "type": "user.registered",  # esto llama a user_registered en el consumer
+                    "html": html_tabla,
+                    "mensaje": f"Nuevo usuario registrado: {usuario.nombres} {usuario.apellidos}",
+                    # Opcional: enviar conteo de usuarios
+                    "count": Usuario.objects.count()
+                }
             )
+            # <<< fin notificación
 
             messages.success(request, "Usuario registrado exitosamente. Ahora puede iniciar sesión.")
             return redirect("login")

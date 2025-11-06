@@ -1,13 +1,7 @@
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-from django.core.asgi import get_asgi_application
-import usuario.routing
+from django.urls import path
+from .consumers import AdminUserConsumer
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            usuario.routing.websocket_urlpatterns
-        )
-    ),
-})
+websocket_urlpatterns = [
+    # ruta para el panel administrador
+    path("ws/usuarios/", AdminUserConsumer.as_asgi()),
+]

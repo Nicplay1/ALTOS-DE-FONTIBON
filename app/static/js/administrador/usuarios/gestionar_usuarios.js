@@ -1,24 +1,13 @@
-const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-const socketUsuarios = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/usuarios/");
+// static/js/administrador/usuarios/gestionar_usuarios.js
+(function () {
 
-socketUsuarios.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    document.getElementById("resultados-usuarios").innerHTML = data.html;
-    console.log("👥 Lista de usuarios actualizada automáticamente");
-};
-
-socketUsuarios.onopen = () => console.log("✅ WebSocket de usuarios conectado");
-socketUsuarios.onclose = () => console.error("❌ WebSocket de usuarios cerrado");
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    // Obtener URLs desde atributos data
-    const gestionarUsuariosUrl = document.body.dataset.gestionarUsuariosUrl;
-    const searchInput = document.querySelector(".search-input");
+    // ---- ELEMENTOS PRINCIPALES ----
     const resultadosDiv = document.getElementById("resultados-usuarios");
+    const searchInput = document.querySelector(".search-input");
+    const notificaciones = document.getElementById("notificaciones");
+    const userCountEl = document.getElementById("userCount");
 
-    // Modal elementos
+    // Modal
     const confirmationModal = document.getElementById('confirmationModal');
     const userNameModal = document.getElementById('userNameModal');
     const roleNameModal = document.getElementById('roleNameModal');
@@ -27,7 +16,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const loadingIndicator = document.getElementById('loadingIndicator');
     let currentForm = null;
 
-    // CSRF Token
+    // URL gestion
+    const gestionarUsuariosUrl = document.body.dataset.gestionarUsuariosUrl;
+
+    // ---- FUNCIONES ÚTILES ----
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -44,10 +36,68 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const csrftoken = getCookie('csrftoken');
 
-    // Mostrar modal al hacer clic en "Cambiar"
+    // ---- WEBSOCKET ----
+    const loc = window.location;
+    const wsScheme = (loc.protocol === "https:") ? "wss" : "ws";
+    const wsUrl = wsScheme + "://" + loc.host + "/ws/usuarios/";
+    let socket = null;
+
+    function conectarWS() {
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => console.log("✅ WebSocket de usuarios conectado");
+
+        socket.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+
+                if (data.html && resultadosDiv) {
+                    resultadosDiv.innerHTML = data.html;
+                    bindRoleForms();
+                }
+
+                if (data.count !== null && userCountEl) {
+                    userCountEl.innerHTML = `<i class="fas fa-users"></i> Total: ${data.count} usuarios`;
+                }
+
+                if (data.mensaje) showNotification(data.mensaje);
+
+            } catch (err) {
+                console.error("Error parseando mensaje WS:", err);
+            }
+        };
+
+        socket.onclose = e => {
+            console.warn("❌ WebSocket cerrado — reconectando en 3s", e.reason);
+            setTimeout(conectarWS, 3000);
+        };
+        socket.onerror = err => socket.close();
+    }
+
+    // ---- NOTIFICACIONES ----
+    function showNotification(text) {
+        if (!notificaciones) return;
+
+        const div = document.createElement("div");
+        div.className = "alert-modern alert-success";
+        div.innerHTML = `
+            <i class="fas fa-check-circle"></i> ${text}
+        `;
+        notificaciones.appendChild(div);
+
+        setTimeout(() => {
+            div.classList.remove('show');
+            setTimeout(() => div.remove(), 300);
+        }, 4000);
+    }
+
+    // ---- FORMULARIOS CAMBIO ROL ----
     function bindRoleForms() {
         document.querySelectorAll(".role-form").forEach(form => {
             const changeBtn = form.querySelector(".change-role-btn");
+            if (!changeBtn || changeBtn.dataset.bound) return;
+            changeBtn.dataset.bound = "true";
+
             changeBtn.addEventListener("click", function () {
                 const userName = form.getAttribute('data-user-name');
                 const roleSelect = form.querySelector('select[name="id_rol"]');
@@ -62,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Confirmar cambio de rol con AJAX
+    // Confirmar en modal
     confirmChangeBtn.addEventListener("click", function () {
         if (!currentForm) return;
 
@@ -82,24 +132,10 @@ document.addEventListener("DOMContentLoaded", function () {
             resultadosDiv.innerHTML = data.html;
             confirmationModal.classList.remove('active');
             loadingIndicator.classList.remove('active');
+
             bindRoleForms();
+            if (data.mensaje) showNotification(data.mensaje);
 
-            // Mostrar notificación
-            const notificaciones = document.getElementById("notificaciones");
-            if (notificaciones) {
-                const div = document.createElement("div");
-                div.className = `alert-modern alert-${data.status}`;
-                div.innerHTML = `
-                    <i class="fas ${data.status === 'success' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
-                    ${data.mensaje}
-                `;
-                notificaciones.appendChild(div);
-
-                setTimeout(() => {
-                    div.classList.remove('show');
-                    setTimeout(() => div.remove(), 300);
-                }, 4000);
-            }
         })
         .catch(() => {
             loadingIndicator.classList.remove('active');
@@ -108,27 +144,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
         currentForm = null;
     });
-
-    // Cancelar modal
     cancelChangeBtn.addEventListener("click", function () {
         confirmationModal.classList.remove('active');
         currentForm = null;
     });
 
-    // Buscar mientras escribe
+    // ---- BÚSQUEDA AJAX ----
     searchInput.addEventListener("keyup", function () {
         const query = searchInput.value;
+
         fetch(`${gestionarUsuariosUrl}?q=${encodeURIComponent(query)}`, {
             headers: { "X-Requested-With": "XMLHttpRequest" }
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             resultadosDiv.innerHTML = data.html;
             bindRoleForms();
         });
     });
 
-    // Sidebar
+    // ---- SIDEBAR ----
     const toggleBtn = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebarOverlay');
@@ -141,21 +176,20 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleBtn.addEventListener('click', toggleSidebar);
     overlay.addEventListener('click', toggleSidebar);
 
-    document.addEventListener('keydown', function(e) {
+    window.addEventListener('keydown', e => {
         if (e.key === 'Escape' && sidebar.classList.contains('active')) {
             toggleSidebar();
         }
     });
-
-    function handleResize() {
+    window.addEventListener('resize', () => {
         if (window.innerWidth > 768) {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         }
-    }
+    });
 
-    window.addEventListener('resize', handleResize);
-
-    // Inicialización
+    // ---- INICIALIZACIÓN ----
     bindRoleForms();
-});
+    conectarWS();
+
+})();
