@@ -1,7 +1,6 @@
-# residente/routing.py
 from django.urls import re_path
-from . import consumers
+from .consumers import NoticiasConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/noticias/$', consumers.NoticiasConsumer.as_asgi()),
+    re_path(r'ws/noticias/$', NoticiasConsumer.as_asgi()),
 ]

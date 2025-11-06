@@ -160,31 +160,19 @@ def eliminar_pago(request, pago_id):
 # Función para enviar noticias vía WebSocket
 # -----------------------------------------
 def enviar_noticias_ws():
-    """
-    Obtiene todas las noticias actualizadas y las envía
-    al grupo 'noticias' de Django Channels para que
-    los residentes las vean en tiempo real.
-    """
     noticias = Noticias.objects.all().order_by('-fecha_publicacion')
-    noticias_serializadas = []
 
-    for noticia in noticias:
-        noticias_serializadas.append({
-            "id_noticia": noticia.id_noticia,
-            "titulo": noticia.titulo,
-            "descripcion": noticia.descripcion,
-            "fecha_publicacion": noticia.fecha_publicacion.strftime("%Y-%m-%d %H:%M:%S"),
-        })
+    # Renderizamos HTML con la lista de noticias
+    html = render_to_string('residente/detalles_residente/_noticias_list.html', {'noticias': noticias})
 
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "noticias",
         {
             "type": "enviar_noticias",
-            "noticias": noticias_serializadas,
+            "html": html
         }
     )
-
 # -----------------------------------------
 # Listar, crear y editar noticias
 # -----------------------------------------

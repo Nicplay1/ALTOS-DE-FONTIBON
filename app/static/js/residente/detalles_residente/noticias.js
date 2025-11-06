@@ -1,17 +1,20 @@
-// residente/detalles_residente/noticias.js
+function conectarWS() {
+    const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    const socket = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/noticias/");
 
-const socket = new WebSocket(
-    'ws://' + window.location.host + '/ws/noticias/'
-);
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.getElementById('noticiasContainer').innerHTML = data.html;
+    };
 
-socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    document.getElementById('noticiasContainer').innerHTML = data.html;
-};
+    socket.onopen = () => console.log("WebSocket conectado");
+    socket.onclose = () => {
+        console.error("WebSocket cerrado. Reconectando en 3s...");
+        setTimeout(conectarWS, 3000);
+    };
+}
 
-socket.onclose = function(e) {
-    console.error('WebSocket cerrado inesperadamente');
-};
+conectarWS();
 
 
 
