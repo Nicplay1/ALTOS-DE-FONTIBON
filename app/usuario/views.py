@@ -22,11 +22,11 @@ def register_view(request):
             usuario.contraseña = make_password(form.cleaned_data['contraseña'])
             usuario.save()
 
-            # 🔔 Notificar al grupo de WebSocket
+            # ✅ Enviar actualización por WebSocket
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 "usuarios_group",
-                {"type": "usuario_actualizado"}
+                {"type": "enviar_lista_usuarios"}
             )
 
             messages.success(request, "Usuario registrado exitosamente. Ahora puede iniciar sesión.")
