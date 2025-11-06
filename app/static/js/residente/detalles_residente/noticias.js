@@ -1,21 +1,19 @@
-function actualizarNoticias() {
-    fetch("{% url 'noticias_fragmento' %}")
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('noticiasContainer').innerHTML = data.html;
-        })
-        .catch(err => console.error('Error al actualizar noticias:', err));
-}
+// residente/detalles_residente/noticias.js
 
-// Actualiza cada 5 segundos (5000 ms)
-setInterval(actualizarNoticias, 4000);
+const socket = new WebSocket(
+    'ws://' + window.location.host + '/ws/noticias/'
+);
 
-setTimeout(() => {
-    document.querySelectorAll('.alert-modern').forEach(el => {
-        el.classList.remove('show');
-        setTimeout(() => el.remove(), 300);
-    });
-}, 4000);
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    document.getElementById('noticiasContainer').innerHTML = data.html;
+};
+
+socket.onclose = function(e) {
+    console.error('WebSocket cerrado inesperadamente');
+};
+
+
 
 // Sidebar Responsive
 const toggleBtn = document.getElementById('toggleSidebar');

@@ -8,7 +8,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-pf7lx3f(rk7&qqs33&(#sfgg2-_d=g9f9g=bfw2e5gr59vhnrt'
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['prueba-final-6586.onrender.com', 'localhost', '127.0.0.1']
 
@@ -77,11 +77,12 @@ ASGI_APPLICATION = "app.asgi.application"
 
 # Configurar Redis para producción
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL")],
+            "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")],
         },
     },
 }
