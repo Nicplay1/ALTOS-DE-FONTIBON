@@ -165,18 +165,23 @@ def enviar_noticias_ws():
     al grupo 'noticias' de Django Channels para que
     los residentes las vean en tiempo real.
     """
-    noticias = list(
-        Noticias.objects.all()
-        .order_by('-fecha_publicacion')
-        .values('id_noticia', 'titulo', 'descripcion', 'fecha_publicacion')
-    )
+    noticias = Noticias.objects.all().order_by('-fecha_publicacion')
+    noticias_serializadas = []
+
+    for noticia in noticias:
+        noticias_serializadas.append({
+            "id_noticia": noticia.id_noticia,
+            "titulo": noticia.titulo,
+            "descripcion": noticia.descripcion,
+            "fecha_publicacion": noticia.fecha_publicacion.strftime("%Y-%m-%d %H:%M:%S"),
+        })
 
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "noticias",
         {
-            "type": "enviar_noticias",  # nombre del método en el consumidor
-            "noticias": noticias,
+            "type": "enviar_noticias",
+            "noticias": noticias_serializadas,
         }
     )
 
