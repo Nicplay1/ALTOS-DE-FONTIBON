@@ -11,7 +11,8 @@ import re
 from django.contrib.auth import logout
 import datetime
 
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 def register_view(request):
     if request.method == "POST":
@@ -20,6 +21,14 @@ def register_view(request):
             usuario = form.save(commit=False)
             usuario.contraseña = make_password(form.cleaned_data['contraseña'])
             usuario.save()
+
+            # 🔔 Notificar al grupo de WebSocket
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "usuarios_group",
+                {"type": "usuario_actualizado"}
+            )
+
             messages.success(request, "Usuario registrado exitosamente. Ahora puede iniciar sesión.")
             return redirect("login")
     else:

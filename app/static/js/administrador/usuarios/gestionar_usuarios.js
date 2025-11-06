@@ -1,3 +1,17 @@
+const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+const socketUsuarios = new WebSocket(ws_scheme + "://" + window.location.host + "/ws/usuarios/");
+
+socketUsuarios.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    document.getElementById("resultados-usuarios").innerHTML = data.html;
+    console.log("👥 Lista de usuarios actualizada automáticamente");
+};
+
+socketUsuarios.onopen = () => console.log("✅ WebSocket de usuarios conectado");
+socketUsuarios.onclose = () => console.error("❌ WebSocket de usuarios cerrado");
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     // Obtener URLs desde atributos data
     const gestionarUsuariosUrl = document.body.dataset.gestionarUsuariosUrl;
