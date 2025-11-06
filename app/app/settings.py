@@ -12,6 +12,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['prueba-final-6586.onrender.com', 'localhost', '127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://prueba-final-6586.onrender.com",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+
 # ---------------------------------------
 # 🧩 APLICACIONES
 # ---------------------------------------
