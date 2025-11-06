@@ -42,6 +42,9 @@ echo "⚙️ Aplicando migraciones nuevas..."
 python manage.py makemigrations --noinput
 python manage.py migrate --noinput
 
+echo "📂 Recolectando archivos estáticos..."
+python manage.py collectstatic --noinput
+
 echo "📦 Cargando datos iniciales si faltan..."
 python manage.py init_datos || true
 
