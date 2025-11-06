@@ -20,6 +20,10 @@ from django.utils.dateparse import parse_date
 from django.conf import settings
 import requests
 
+# Para WebSocket
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 
 @rol_requerido([3])
 @login_requerido
@@ -151,6 +155,34 @@ def eliminar_pago(request, pago_id):
         return redirect("detalle_reserva_con_pagos", id_reserva=reserva_id)
 
 
+
+# -----------------------------------------
+# Función para enviar noticias vía WebSocket
+# -----------------------------------------
+def enviar_noticias_ws():
+    """
+    Obtiene todas las noticias actualizadas y las envía
+    al grupo 'noticias' de Django Channels para que
+    los residentes las vean en tiempo real.
+    """
+    noticias = list(
+        Noticias.objects.all()
+        .order_by('-fecha_publicacion')
+        .values('id_noticia', 'titulo', 'descripcion', 'fecha_publicacion')
+    )
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "noticias",
+        {
+            "type": "enviar_noticias",  # nombre del método en el consumidor
+            "noticias": noticias,
+        }
+    )
+
+# -----------------------------------------
+# Listar, crear y editar noticias
+# -----------------------------------------
 @rol_requerido([3])
 @login_requerido
 def listar_noticias(request):
@@ -163,14 +195,23 @@ def listar_noticias(request):
             noticia = form.save(commit=False)
             noticia.cod_usuario = request.usuario
             noticia.save()
+
+            # Notificar cambios a todos los residentes
+            enviar_noticias_ws()
+
             messages.success(request, "Noticia creada exitosamente ")
             return redirect("listar_noticias")
+
     # Editar Noticia
     elif request.method == "POST" and "editar" in request.POST:
         noticia = get_object_or_404(Noticias, id_noticia=request.POST.get("id_noticia"))
         form = NoticiasForm(request.POST, instance=noticia)
         if form.is_valid():
             form.save()
+
+            # Notificar cambios a todos los residentes
+            enviar_noticias_ws()
+
             messages.success(request, "Noticia actualizada correctamente ")
             return redirect("listar_noticias")
 
@@ -182,13 +223,18 @@ def listar_noticias(request):
         "form": form,
     })
 
-
-
+# -----------------------------------------
+# Eliminar noticia
+# -----------------------------------------
 @rol_requerido([3])
 @login_requerido
 def eliminar_noticia(request, id_noticia):
     noticia = get_object_or_404(Noticias, id_noticia=id_noticia)
     noticia.delete()
+
+    # Notificar cambios a todos los residentes
+    enviar_noticias_ws()
+
     messages.success(request, "Noticia eliminada ")
     return redirect("listar_noticias")
 

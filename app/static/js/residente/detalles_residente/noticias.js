@@ -1,4 +1,25 @@
+const noticiasContainer = document.getElementById("noticias-container");
 
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/noticias/"
+);
+
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    noticiasContainer.innerHTML = "";
+
+    data.noticias.forEach(noticia => {
+        const div = document.createElement("div");
+        div.innerHTML = `<h3>${noticia.titulo}</h3>
+                         <p>${noticia.descripcion}</p>
+                         <small>${noticia.fecha_publicacion}</small>`;
+        noticiasContainer.appendChild(div);
+    });
+};
+
+socket.onclose = function(e) {
+    console.error("Socket cerrado inesperadamente.");
+};
 
 setTimeout(() => {
     document.querySelectorAll('.alert-modern').forEach(el => {
