@@ -1,8 +1,7 @@
 const noticiasContainer = document.getElementById("noticias-container");
 
-const socket = new WebSocket(
-    "ws://" + window.location.host + "/ws/noticias/"
-);
+const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+const socket = new WebSocket(`${protocol}://${window.location.host}/ws/noticias/`);
 
 socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
