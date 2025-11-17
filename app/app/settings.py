@@ -75,14 +75,13 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Channels
 ASGI_APPLICATION = "app.asgi.application"
 
-# Configurar Redis para producción
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")],
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -93,23 +92,23 @@ import pymysql
 pymysql.install_as_MySQLdb()
 
 # Opción: cambiar 'default_db' a 'mysql' o 'postgres' según la base que quieras usar
-default_db = 'postgres'  # 'mysql' o 'postgres'
+default_db = 'mysql'  # 'mysql' o 'postgres'
 
 if default_db == 'mysql':
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'proyecto_bd',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '3306',
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-            }
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'proyecto_bd',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
     }
+}
 elif default_db == 'postgres':
     DATABASES = {
         'default': {
@@ -156,19 +155,31 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ---------------------------------------
-# 📧 CONFIGURACIÓN DE CORREO
+# 📧 CONFIGURACIÓN DE CORREO PRODUCCION
 # ---------------------------------------
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+#EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+#SENDGRID_API_KEY = os.getenv("EMAIL_HOST_PASSWORD")
 
-# Tu API Key de SendGrid (desde variables de entorno)
-SENDGRID_API_KEY = os.getenv("EMAIL_HOST_PASSWORD")
+
+# ---------------------------------------
+# 📧 CONFIGURACIÓN DE CORREO DESARRROLLO
+# ---------------------------------------
+# Configuración de Gmail para envío de correos
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
+EMAIL_HOST_PASSWORD = 'heho zywq sayt pexm'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 # Opciones de depuración (opcional)
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False
-SENDGRID_ECHO_TO_STDOUT = True
+#SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+#SENDGRID_ECHO_TO_STDOUT = True
 
 # Correo por defecto
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
+#DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
 
 
 # 🟢 En Render, solo mostrar el correo en consola (no enviarlo)

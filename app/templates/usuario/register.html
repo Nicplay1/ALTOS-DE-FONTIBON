@@ -1,121 +1,160 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registro - Altos de Fontibón</title>
-    <link rel="stylesheet" href="{% static 'css/usuario/register.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Imagen izquierda -->
-      <div class="image-side">
-        <img
-          src="{% static 'img/imagen-register.jpg' %}"
-          alt="Altos de Fontibón"
-        />
-      </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Fontibon Contigo</title>
+    <link rel="icon" href="{% static 'img/1.png' %}" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/usuario/register.css' %}">
+</head>
+<body>
+    <!-- Contenedor para alertas flash -->
+    <div class="alert-container" id="alertContainer"></div>
 
-      <!-- Formulario -->
-      <div class="form-side">
-        <div class="logo">
-          <img
-            src="{% static '/img/Logo Fontibon - 1.jpg' %}"
-            alt="Altos de Fontibón"
-          />
-          <h1>¡Fontibón Contigo!</h1>
+    <div class="register-container">
+        <div class="left-side">
+            <img id="left-image" src="{% static 'img/imagen-register.jpg' %}" alt="Imagen de fondo">
         </div>
-
-        <!-- mensajes de django -->
-
-        
-       {% if form.errors %}
-        <div class="alert-wrapper">
-          {% for field, errors in form.errors.items %}
-            {% for error in errors %}
-              <div class="alert-message alert-error">
-                <i class="fa fa-exclamation-circle"></i>
-                {{ error }}
-              </div>
-            {% endfor %}
-          {% endfor %}
+        <div class="right-side">
+            <div class="logo-container">
+                <a href="{% url 'index' %}" class="logo">
+                    <img src="{% static 'img/LOGO.png' %}" alt="Logo">
+                </a>
+                <h1>Crear Cuenta</h1>
+                <div class="subtitle">¡Fontibon Contigo!</div>
+            </div>
+            <p class="instruction">Completa tus datos para registrarte en el aplicativo</p>
+            
+            <form id="registerForm" method="post">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-container">
+                            <i class="input-icon fas fa-user"></i>
+                            <input type="text" id="nombres" name="nombres" class="form-input" placeholder=" " required>
+                            <label for="nombres" class="form-label">Nombres</label>
+                        </div>
+                        <div id="nombres-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-container">
+                            <i class="input-icon fas fa-user"></i>
+                            <input type="text" id="apellidos" name="apellidos" class="form-input" placeholder=" " required>
+                            <label for="apellidos" class="form-label">Apellidos</label>
+                        </div>
+                        <div id="apellidos-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-container">
+                            <i class="input-icon fas fa-id-card"></i>
+                            <select id="tipo_documento" name="tipo_documento" class="form-select" required>
+                                <option value=""></option>
+                                <option value="CC">Cédula de Ciudadanía</option>
+                                <option value="CE">Cédula de Extranjería</option>
+                                <option value="TI">Tarjeta de Identidad</option>
+                                <option value="PA">Pasaporte</option>
+                            </select>
+                            <label for="tipo_documento" class="form-label">Tipo de <br> Documento</label>
+                            <i class="select-icon fas fa-chevron-down"></i>
+                        </div>
+                        <div id="tipo_documento-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-container">
+                            <i class="input-icon fas fa-id-card"></i>
+                            <input type="text" id="numero_documento" name="numero_documento" class="form-input" placeholder=" " required>
+                            <label for="numero_documento" class="form-label">Número de<br> Documento</label>
+                        </div>
+                        <div id="numero_documento-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group-full">
+                    <div class="input-container">
+                        <i class="input-icon fas fa-envelope"></i>
+                        <input type="email" id="correo" name="correo" class="form-input" placeholder=" " required>
+                        <label for="correo" class="form-label">Correo Electrónico</label>
+                    </div>
+                    <div id="correo-error" class="error-message"></div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-container mt-2">
+                            <i class="input-icon fas fa-phone"></i>
+                            <input type="tel" id="telefono" name="telefono" class="form-input" placeholder=" " required>
+                            <label for="telefono" class="form-label">Teléfono</label>
+                        </div>
+                        <div id="telefono-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-container mt-2">
+                            <i class="input-icon fas fa-mobile-alt"></i>
+                            <input type="tel" id="celular" name="celular" class="form-input" placeholder=" " required>
+                            <label for="celular" class="form-label">Celular</label>
+                        </div>
+                        <div id="celular-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-container mt-2">
+                            <div class="password-container ">
+                                <i class="input-icon fas fa-lock"></i>
+                                <input type="password" id="contraseña" name="contraseña" class="form-input" placeholder=" " required>
+                                <label for="contraseña" class="form-label">Contraseña</label>
+                                <span class="toggle-password" id="togglePassword1">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="contraseña-error" class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-container mt-2">
+                            <div class="password-container">
+                                <i class="input-icon fas fa-lock"></i>
+                                <input type="password" id="confirmar_contraseña" name="confirmar_contraseña" class="form-input" placeholder=" " required>
+                                <label for="confirmar_contraseña" class="form-label">Confirmar Contraseña</label>
+                                <span class="toggle-password" id="togglePassword2">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div id="confirmar_contraseña-error" class="error-message"></div>
+                    </div>
+                </div>
+                
+                <div class="terms-container">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">Acepto los <a href="#">términos y condiciones</a></label>
+                </div>
+                
+                <button type="submit" class="register-btn">Registrarse</button>
+                
+                <div class="login-link">
+                    ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia Sesión</a>
+                </div>
+            </form>
         </div>
-        {% endif %}
-        <!-- formulario -->
-        <form method="POST" onsubmit="return validarPassword();">
-          {% csrf_token %}
-
-          <div class="form-grid">
-            <div class="input-box">
-              <i class="fa fa-user"></i>
-              {{ form.nombres }}
-            </div>
-            <div class="input-box">
-              <i class="fa fa-user"></i>
-              {{ form.apellidos }}
-            </div>
-            <div class="input-box">{{ form.tipo_documento }}</div>
-            <div class="input-box">
-              <i class="fa fa-id-card"></i>
-              {{ form.numero_documento }}
-            </div>
-            <div class="input-box">
-              <i class="fa fa-envelope"></i>
-              {{ form.correo }}
-            </div>
-            <div class="input-box">
-              <i class="fa fa-phone"></i>
-              {{ form.telefono }}
-            </div>
-            <div class="input-box">
-              <i class="fa fa-phone"></i>
-              {{ form.celular }}
-            </div>
-
-            <!-- Contraseña -->
-            <div class="input-box">
-              <div class="password-container">
-                <i class="fa fa-lock"></i>
-                {{ form.contraseña }}
-                <i
-                  class="fa fa-eye toggle-password"
-                  onclick="togglePassword('id_contraseña', this)"
-                ></i>
-              </div>
-            </div>
-
-            <!-- Confirmar contraseña -->
-            <div class="input-box">
-              <div class="password-container">
-                <i class="fa fa-lock"></i>
-                {{ form.confirmar_contraseña }}
-                <i
-                  class="fa fa-eye toggle-password"
-                  onclick="togglePassword('id_confirmar_contraseña', this)"
-                ></i>
-              </div>
-            </div>
-          </div>
-          <button class="btn" type="submit">Registrarse</button>
-        </form>
-
-        <div class="links">
-          <a href="{% static 'docs/Terminos_y_Condiciones_AltosDeFontibon.pdf' %}" target="_blank">Términos y condiciones</a>
-          <a href="{% static 'docs/Politica_de_Privacidad_AltosDeFontibon.pdf' %}" target="_blank">Política de privacidad</a>
-          <p class="forgot">
-            ¿Ya tienes cuenta?
-            <a href="{% url 'login' %}">Inicia sesión</a>
-          </p>
-        </div>
-      </div>
     </div>
 
-    <!-- Toast de contraseña -->
-    <div id="passwordHelp" class="password-error">
-      La contraseña debe tener más de 5 caracteres y al menos 1 mayúscula.
-    </div>
     <script src="{% static 'js/usuario/register.js' %}"></script>
-  </body>
+    <script>
+        const registerUrl = "{% url 'register' %}";
+    </script>
+</body>
 </html>

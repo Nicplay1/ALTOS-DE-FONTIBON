@@ -1,7 +1,7 @@
-from django.urls import path
+from django.urls import re_path
 from . import consumers
 
 websocket_urlpatterns = [
-    # URL para actualizaciones de usuarios (administrador)
-    path("ws/usuarios/", consumers.UsuarioConsumer.as_asgi()),
+    re_path(r"ws/usuarios/$", consumers.UsuariosConsumer.as_asgi()),
+    re_path(r"ws/reservas/$", consumers.ReservasConsumer.as_asgi()),  # NUEVO
 ]

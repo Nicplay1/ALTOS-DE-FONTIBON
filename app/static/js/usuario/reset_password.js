@@ -1,68 +1,93 @@
-setTimeout(() => {
-            document.querySelectorAll('.alert-modern').forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translate(-50%, -20px)';
-                setTimeout(() => el.remove(), 300);
-            });
-        }, 5000);
+// Función para mostrar/ocultar contraseña
+function setupPasswordToggle(toggleId, passwordId) {
+    const toggle = document.getElementById(toggleId);
+    const passwordInput = document.getElementById(passwordId);
+    
+    toggle.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Cambiar icono
+        const icon = this.querySelector('i');
+        if (type === 'password') {
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        } else {
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    });
+}
 
-// Validación de fortaleza de contraseña
-        const nuevaPassword = document.getElementById('nuevaPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        const passwordStrength = document.getElementById('passwordStrength');
-        const passwordMatch = document.getElementById('passwordMatch');
-
-        nuevaPassword.addEventListener('input', function() {
-            const password = this.value;
-            let strength = '';
-            let color = '';
-
-            if (password.length === 0) {
-                strength = '';
-            } else if (password.length < 6) {
-                strength = 'Débil - Mínimo 6 caracteres';
-                color = 'strength-weak';
-            } else if (password.length < 8) {
-                strength = 'Media - Recomendado 8+ caracteres';
-                color = 'strength-medium';
-            } else {
-                // Verificar si tiene números y caracteres especiales
-                const hasNumbers = /\d/.test(password);
-                const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-                
-                if (hasNumbers && hasSpecial) {
-                    strength = 'Fuerte - Excelente contraseña';
-                    color = 'strength-strong';
-                } else if (hasNumbers || hasSpecial) {
-                    strength = 'Media - Agrega más variedad de caracteres';
-                    color = 'strength-medium';
-                } else {
-                    strength = 'Débil - Agrega números y símbolos';
-                    color = 'strength-weak';
-                }
+// Función para mostrar alerta
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alertContainer');
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i>
+        <span>${message}</span>
+    `;
+    alertContainer.appendChild(alertDiv);
+    
+    // Auto-eliminar alerta después de 3 segundos
+    setTimeout(() => {
+        alertDiv.style.animation = 'fadeOut 0.5s ease-in forwards';
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
             }
+        }, 500);
+    }, 3000);
+}
 
-            passwordStrength.innerHTML = strength ? `<span class="${color}">${strength}</span>` : '';
-        });
+// Efecto de zoom en el logo
+document.querySelector('.logo').addEventListener('mouseenter', function() {
+    this.style.transform = 'scale(1.1)';
+});
 
-        // Validación de coincidencia de contraseñas
-        confirmPassword.addEventListener('input', function() {
-            if (nuevaPassword.value && this.value) {
-                if (nuevaPassword.value === this.value) {
-                    passwordMatch.innerHTML = '<span class="strength-strong">✓ Las contraseñas coinciden</span>';
-                } else {
-                    passwordMatch.innerHTML = '<span class="strength-weak">✗ Las contraseñas no coinciden</span>';
-                }
-            } else {
-                passwordMatch.innerHTML = '';
-            }
-        });
+document.querySelector('.logo').addEventListener('mouseleave', function() {
+    this.style.transform = 'scale(1)';
+});
 
-        // Validación del formulario
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
-            if (nuevaPassword.value !== confirmPassword.value) {
-                e.preventDefault();
-                passwordMatch.innerHTML = '<span class="strength-weak">✗ Las contraseñas deben coincidir</span>';
-                confirmPassword.focus();
-            }
-        });
+// Validación en tiempo real de requisitos de contraseña
+document.getElementById('nueva_contraseña').addEventListener('input', function() {
+    const password = this.value;
+    const errorElement = document.getElementById('nueva-error');
+    
+    // Limpiar error anterior
+    errorElement.innerHTML = '';
+    
+    // Validar longitud
+    if (password.length > 0 && password.length < 6) {
+        errorElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> La contraseña debe tener al menos 6 caracteres';
+        return;
+    }
+    
+    // Validar mayúscula
+    if (password.length >= 6 && !/(?=.*[A-Z])/.test(password)) {
+        errorElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> La contraseña debe contener al menos una letra mayúscula';
+        return;
+    }
+});
+
+// Validación de coincidencia de contraseñas
+document.getElementById('confirmar_contraseña').addEventListener('input', function() {
+    const confirmPassword = this.value;
+    const password = document.getElementById('nueva_contraseña').value;
+    const errorElement = document.getElementById('confirmar-error');
+    
+    // Limpiar error anterior
+    errorElement.innerHTML = '';
+    
+    // Validar coincidencia
+    if (confirmPassword && password !== confirmPassword) {
+        errorElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> Las contraseñas no coinciden';
+    }
+});
+
+// Configurar toggles para ambas contraseñas cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    setupPasswordToggle('togglePassword1', 'nueva_contraseña');
+    setupPasswordToggle('togglePassword2', 'confirmar_contraseña');
+});

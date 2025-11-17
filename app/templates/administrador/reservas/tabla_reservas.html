@@ -1,38 +1,100 @@
-{% for reserva in reservas %}
-<tr>
-    <td>{{ reserva.id_reserva }}</td>
-    <td>{{ reserva.cod_usuario.nombres }} {{ reserva.cod_usuario.apellidos }}</td>
-    <td>{{ reserva.cod_zona.nombre_zona }}</td>
-    <td>{{ reserva.fecha_uso }}</td>
-    <td>{{ reserva.hora_inicio }}</td>
-    <td>{{ reserva.hora_fin }}</td>
-    <td>
-        {% if reserva.estado == 'En espera' %}
-            <span class="role-badge badge-warning">
-                <i class="fas fa-clock"></i>
-                {{ reserva.estado }}
-            </span>
-        {% elif reserva.estado == 'Aprobada' %}
-            <span class="role-badge badge-success">
-                <i class="fas fa-check-circle"></i>
-                {{ reserva.estado }}
-            </span>
-        {% else %}
-            <span class="role-badge badge-danger">
-                <i class="fas fa-times-circle"></i>
-                {{ reserva.estado }}
-            </span>
-        {% endif %}
-    </td>
-    <td>{{ reserva.observacion|default:"Sin observación" }}</td>
-    <td>
-        <a href="{% url 'detalle_reserva_con_pagos' reserva.id_reserva %}" class="btn-modern">
-            <i class="fas fa-file-invoice-dollar"></i> Ver Detalle y Pagos
-        </a>
-    </td>
-</tr>
-{% empty %}
-<tr>
-    <td colspan="9" class="text-center">No hay reservas registradas.</td>
-</tr>
-{% endfor %}
+<!-- Contenedor para scroll horizontal -->
+<div class="table-container">
+    <!-- TABLA para desktop -->
+    <table class="table table-hover align-middle">
+        <thead class="table-header-gradient">
+            <tr>
+                <th>Usuario</th>
+                <th>Zona</th>
+                <th>Fecha</th>
+                <th>Hora inicio</th>
+                <th>Hora fin</th>
+                <th>Estado</th>
+                <th>Observación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for r in reservas %}
+            <tr>
+                <td>{{ r.cod_usuario.nombres }} {{ r.cod_usuario.apellidos }}</td>
+                <td>{{ r.cod_zona.nombre_zona }}</td>
+                <td>{{ r.fecha_uso }}</td>
+                <td>{{ r.hora_inicio|default:"-" }}</td>
+                <td>{{ r.hora_fin|default:"-" }}</td>
+
+                <td>
+                    <span class="estado-{{ r.estado|slugify }}">
+                        <i class="fas 
+                            {% if r.estado == 'Aprobada' %}fa-check-circle{% endif %}
+                            {% if r.estado == 'Rechazada' %}fa-times-circle{% endif %}
+                            {% if r.estado == 'En espera' %}fa-clock{% endif %}
+                        me-2"></i>
+                        {{ r.estado }}
+                    </span>
+                </td>
+
+                <td>{{ r.observacion|default:"-" }}</td>
+
+                <td>
+                    <a href="{% url 'detalle_reserva_con_pagos' r.id_reserva %}" 
+                       class="btn btn-detalle">
+                        <i class="fas fa-eye me-1"></i>
+                        Ver detalle
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-calendar-times fa-4x mb-3" style="color: #94a3b8;"></i>
+                        <h4 class="text-muted">No se encontraron reservas</h4>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- CARDS para mobile -->
+<div class="d-md-none">
+    {% for r in reservas %}
+    <div class="card card-reserva mb-3 shadow-sm p-2">
+        <div class="card-body">
+            <h5 class="card-title">{{ r.cod_usuario.nombres }} {{ r.cod_usuario.apellidos }}</h5>
+            <p class="mb-1"><strong>Zona:</strong> {{ r.cod_zona.nombre_zona }}</p>
+            <p class="mb-1"><strong>Fecha:</strong> {{ r.fecha_uso }}</p>
+            <p class="mb-1"><strong>Hora inicio:</strong> {{ r.hora_inicio|default:"-" }}</p>
+            <p class="mb-1"><strong>Hora fin:</strong> {{ r.hora_fin|default:"-" }}</p>
+
+            <p class="mb-1">
+                <strong>Estado:</strong>
+                <span class="estado-{{ r.estado|slugify }}">
+                    <i class="fas 
+                        {% if r.estado == 'Aprobada' %}fa-check-circle{% endif %}
+                        {% if r.estado == 'Rechazada' %}fa-times-circle{% endif %}
+                        {% if r.estado == 'En espera' %}fa-clock{% endif %}
+                    me-2"></i>
+                    {{ r.estado }}
+                </span>
+            </p>
+
+            <p class="mb-1"><strong>Observación:</strong> {{ r.observacion|default:"-" }}</p>
+
+            <a href="{% url 'detalle_reserva_con_pagos' r.id_reserva %}" 
+               class="btn btn-detalle mt-2">
+                <i class="fas fa-eye me-1"></i>
+                Ver detalle
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state text-center py-5">
+        <i class="fas fa-calendar-times fa-4x mb-3" style="color: #94a3b8;"></i>
+        <h4 class="text-muted">No se encontraron reservas</h4>
+    </div>
+    {% endfor %}
+</div>

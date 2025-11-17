@@ -4,456 +4,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <title>Altos Fontibón</title>
+    <title>Bienvenido Altos Fontibon</title>
+    <link rel="icon" href="{% static 'img/1.png' %}" type="image/png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- CSS Personalizado -->
     <link rel="stylesheet" href="{% static 'css/usuario/index.css' %}">
 </head>
+
+<style>
+    .carousel-item:nth-child(1) {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                          url("{% static 'img/img1_carrucel_conjunto.webp' %}");
+    }
+
+    .carousel-item:nth-child(2) {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                          url("{% static 'img/hombres-jovenes-que-asan-la-barbacoa-en-parrilla-en-campo-de-la-cabana.jpg' %}");
+    }
+
+    .carousel-item:nth-child(3) {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                          url("{% static 'img/LAS-HE~1.JPG' %}");
+    }
+
+</style>
+
 <body>
-<!-- Navbar -->
-<nav class="navbar">
-        <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo de mi página" class="logo">
-        <!-- Enlaces -->
-        <div class="nav-links" id="nav-links">
-            <a href="#inicio">Inicio</a>
-            <a href="#servicios">Servicios</a>
-            <a href="#nosotros">Nosotros</a>
-            <a href="#contacto">Contacto</a>
-            <div class="button iniciar-sesion-btn">
-                <a href="{% url 'login' %}" class="btn-Iniciar-Sesion">Iniciar Sesión</a>
-            </div>
-        </div>
-        
-        <!-- Botón Hamburguesa (NUEVO) -->
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-    </nav>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-transparent" id="mainNavbar">
+    <div class="container">
 
-    <!-- Overlay (NUEVO) -->
-    <div class="overlay" id="overlay"></div>
+        <!-- Logo -->
+        <a class="navbar-brand text-white" href="#inicio">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" class="navbar-logo">
+        </a>
 
-    <!-- Menú Lateral (NUEVO) -->
-    <div class="sidebar-menu" id="sidebarMenu">
-        <div class="sidebar-header">
-            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo" class="sidebar-logo">
-        </div>
+        <!-- Botón menú móvil -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <div class="sidebar-links">
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Navegación Principal</div>
-                <a href="#inicio">Inicio</a>
-                <a href="#servicios">Servicios</a>
-                <a href="#nosotros">Nosotros</a>
-                <a href="#contacto">Contacto</a>
-            </div>
+        <!-- Items -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
 
-            <div class="sidebar-divider"></div>
+                <li class="nav-item">
+                    <a class="nav-link" href="#inicio">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#servicios">Servicios</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#nosotros">Nosotros</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#zonas">Zonas Comunes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contacto">Contacto</a>
+                </li>
 
-            <div class="sidebar-section">
-                <div class="sidebar-section-title">Legal</div>
-                <a href="{% static 'docs/Terminos_y_Condiciones_AltosDeFontibon.pdf' %}" target="_blank">Términos y Condiciones</a>
-                <a href="{% static 'docs/Politica_de_Privacidad_AltosDeFontibon.pdf' %}" target="_blank" >Política de Privacidad</a>
-            </div>
-        </div>
+                {% if request.session.usuario_id %}
 
-        <div class="sidebar-footer">
-            <a href="{% url 'login' %}" class="sidebar-login-btn">Iniciar Sesión</a>
+                    {% if request.session.rol_id != 1 %}
+                        <li class="nav-item">
+                            {% if request.session.rol_id == 2 %}
+                                <a href="{% url 'panel_residente' %}" class="btn btn-login">Panel Residente</a>
+                            {% elif request.session.rol_id == 3 %}
+                                <a href="{% url 'panel_administrador' %}" class="btn btn-login">Panel Administrador</a>
+                            {% elif request.session.rol_id == 4 %}
+                                <a href="{% url 'panel_vigilante' %}" class="btn btn-login">Panel Vigilante</a>
+                            {% endif %}
+                        </li>
+                    {% endif %}
+
+                    <!-- Botón Cerrar Sesión -->
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="btn btn-login">Cerrar Sesión</a>
+                    </li>
+
+                {% else %}
+
+                    <li class="nav-item">
+                        <a href="{% url 'login' %}" class="btn btn-login">Iniciar Sesión</a>
+                    </li>
+
+                {% endif %}
+
+            </ul>
         </div>
     </div>
+</nav>
 
-
-
-<!-- Script -->
-<script src="{% static 'js/usuario/index.js' %}"></script>
-    <!-- Carrusel -->
-    <div class="carousel">
-        <div class="carousel-slides">
-            <!-- Slide 1 -->
-            <div class="carousel-slide">
-                <img src="{% static 'img/fondo5.webp' %}" id="inicio" alt="Paisaje montañoso">
-                <div class="slide-content">
-                    <h2>Altos de Fontibon</h2>
-                    <p>Conoce sobre nosotros y nuestros lugares</p>
-                    <a href="#incremento" class="btn-explorar">Explorar Más</a>
-                </div>
+    <!-- Carrusel Hero -->
+    <section id="inicio" class="hero-carousel">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+            <!-- Indicadores -->
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
             </div>
-            <!-- Slide 2 -->
-            <div class="carousel-slide">
-                <img src="{% static 'img/noticia.jpg' %}" alt="Bosque nevado">
-                <div class="slide-content">
-                    <h2>Nuestros Espacios</h2>
-                    <p>Conoce todo los espacios que preparamos para ti</p>
-                    <a href="#servicios" class="btn-explorar">Explorar Más</a>
-                </div>
-            </div>
-            <!-- Slide 3 -->
-            <div class="carousel-slide">
-                <img src="{% static 'img/contacto.jpg' %}" alt="Bosque nevado">
-                <div class="slide-content">
-                    <h2>Testiomios</h2>
-                    <p>Contempla las opiniones que la gente tiene sobre nosotros</p>
-                    <a href="#testimonios" class="btn-explorar">Explorar Más</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controles del carrusel -->
-        <div class="carousel-controls">
-            <div class="carousel-control active" data-index="0"></div>
-            <div class="carousel-control" data-index="1"></div>
-            <div class="carousel-control" data-index="2"></div>
-        </div>
-
-        <!-- Flechas de navegación -->
-        <div class="carousel-arrow prev"><i class="fas fa-chevron-left"></i></div>
-        <div class="carousel-arrow next"><i class="fas fa-chevron-right"></i></div>
-    </div>
-  <!-- Bootstrap JS -->
-
-  
-<!--Descripcion del conjunto-->
-<div class="container py-4">
-  <div class="text-center mb-3">
-    <p class="mini-titulo" id="nosotros"><strong> NUESTRA PAGINA WEB</strong></p>
-<h3 class="semi-sudtitulo">CONOCE QUIENES SOMOS NOSOTROS</h3>
-    <div class="subrayado-verde"></div>
-    <p class="contenido"> 
-    Nosotros somos Altos de Fontibón, El lugar donde las personas cumplen el sueño de tener casa <br>propia y encuentran el lugar perfecto para la vida familiar, indiviual, o en pareja.<br> 
-    Coexistimos y convivimos con la naturaleza, un medio ambiente sano en paz y tranquilidad.<br>
-    Aqui encontraras información útil tanto si es o no residente actual del conjunto.</p>
-  </div>
-</div>
-
-<!-- Parte Cards -->
- <section class="cards-section">
-        <h2 class="section-title" id="servicios">Nuestros Servicios</h2>
-        <div class="cards-container">
-            <div class="cards-wrapper">
-                <!-- Card 1 -->
-                <div class="card" data-card="1">
-                    <div class="card-image">
-                        <img src="{% static 'img/model2.jpg' %}" alt="Zonas Comunes">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Zonas Comunes</h3>
-                        <p class="card-description">Podrás disfrutar de una gran variedad de zonas donde distraerte, divertirte y relajarte</p>
+            
+            <!-- Slides del carrusel -->
+            <div class="carousel-inner">
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <div class="carousel-content">
+                        <h1>Altos de Fontibon</h1>
+                        <p>Conoce sobre nosotros y nuestros lugares</p>
+                        <a href="#nosotros" class="btn btn-explore">Explorar Más</a>
                     </div>
                 </div>
-                <!-- Card 2 -->
-                <div class="card" data-card="2">
-                    <div class="card-image">
-                        <img src="{% static 'img/model1.jpg' %}" alt="Portal de Noticias">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Portal de noticias</h3>
-                        <p class="card-description">Podrás estar al pendiente de todo lo que sucede en el conjunto</p>
-                    </div>
-                </div>
-                <!-- Card 3 -->
-                <div class="card" data-card="3">
-                    <div class="card-image">
-                        <img src="{% static 'img/model3.jpg' %}" alt="Sorteo Parqueadero">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Sorteo de Parqueadero</h3>
-                        <p class="card-description">Podrás participar en sorteos de parqueadero donde tu suerte decidirá el lugar donde te estacionarás</p>
+                
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <div class="carousel-content">
+                        <h1>Nuestros Zonas</h1>
+                        <p>Conoce todo los espacios que preparamos para ti</p>
+                        <a href="#zonas" class="btn btn-explore">Explorar Más</a>
                     </div>
                 </div>
-                <!-- Card 4 -->
-                <div class="card" data-card="4">
-                    <div class="card-image">
-                        <img src="{% static 'img/modal4.jpg' %}" alt="Aventuras Extremas">
-                    </div>
-                    <div class="card-content">
-                        <h3 class="card-title">Eventos por fecha</h3>
-                        <p class="card-description">Podrás participar de las actividades que se realizan por festividad y disfrutar de un buen ambiente</p>
+                
+                <!-- Slide 3 -->
+                <div class="carousel-item">
+                    <div class="carousel-content">
+                        <h1>Que piensan nuestros residentes</h1>
+                        <p>Contempla las opiniones que la gente tiene sobre nosotros</p>
+                        <a href="#reseñas" class="btn btn-explore">Explorar Más</a>
                     </div>
                 </div>
             </div>
+            
+            <!-- Controles del carrusel -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Siguiente</span>
+            </button>
         </div>
     </section>
 
-    <!-- Modal para Card 1 -->
-    <div class="modal-overlay" id="modal-1">
-        <div class="modal-content">
-            <div class="modal-carousel">
-                <div class="modal-carousel-slides">
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal1.1.jpg' %}" alt="Zona común 1">
-                    </div>
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal1.2.webp' %}" alt="Zona común 2">
-                    </div>
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal1.3.jpg' %}" alt="Zona común 3">
-                    </div>
-                </div>
-                <div class="modal-carousel-controls">
-                    <div class="modal-carousel-control active" data-index="0"></div>
-                    <div class="modal-carousel-control" data-index="1"></div>
-                    <div class="modal-carousel-control" data-index="2"></div>
-                </div>
-                <div class="modal-carousel-arrow prev"><i class="fas fa-chevron-left"></i></div>
-                <div class="modal-carousel-arrow next"><i class="fas fa-chevron-right"></i></div>
-            </div>
-            <div class="modal-info">
-                <h2 class="modal-title">Zonas Comunes</h2>
-                <p class="modal-description">Disfruta de una amplia variedad de zonas comunes diseñadas para tu entretenimiento, diversión y relajación. Nuestro conjunto residencial cuenta con espacios cuidadosamente planificados para satisfacer todas tus necesidades, incluyendo áreas verdes, espacios deportivos y zonas de esparcimiento familiar.</p>
-                <button class="modal-close-btn">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Card 2 -->
-    <div class="modal-overlay" id="modal-2">
-        <div class="modal-content">
-            <div class="modal-carousel">
-                <div class="modal-carousel-slides">
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal2.1.jpg' %}" alt="Noticias 1">
-                    </div>
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal2.2.jpg' %}" alt="Noticias 2">
-                    </div>
-                </div>
-                <div class="modal-carousel-controls">
-                    <div class="modal-carousel-control active" data-index="0"></div>
-                    <div class="modal-carousel-control" data-index="1"></div>
-                </div>
-                <div class="modal-carousel-arrow prev"><i class="fas fa-chevron-left"></i></div>
-                <div class="modal-carousel-arrow next"><i class="fas fa-chevron-right"></i></div>
-            </div>
-            <div class="modal-info">
-                <h2 class="modal-title">Portal de Noticias</h2>
-                <p class="modal-description">Mantente informado sobre todo lo que sucede en nuestro conjunto residencial. Nuestro portal de noticias te mantendrá actualizado sobre eventos, mantenimientos, reuniones y todas las novedades importantes de manera rápida y eficiente.</p>
-                <button class="modal-close-btn">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Card 3 -->
-    <div class="modal-overlay" id="modal-3">
-        <div class="modal-content">
-            <div class="modal-carousel">
-                <div class="modal-carousel-slides">
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal3.1.jpg' %}" alt="Parqueadero 1">
-                    </div>
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal3..2.jpg' %}" alt="Parqueadero 2">
-                    </div>
-                </div>
-                <div class="modal-carousel-controls">
-                    <div class="modal-carousel-control active" data-index="0"></div>
-                    <div class="modal-carousel-control" data-index="1"></div>
-                </div>
-                <div class="modal-carousel-arrow prev"><i class="fas fa-chevron-left"></i></div>
-                <div class="modal-carousel-arrow next"><i class="fas fa-chevron-right"></i></div>
-            </div>
-            <div class="modal-info">
-                <h2 class="modal-title">Sorteo de Parqueadero</h2>
-                <p class="modal-description">Participa en nuestros sorteos mensuales de parqueaderos. Tu suerte determinará el lugar donde podrás estacionar tu vehículo durante el próximo mes. Un sistema justo y transparente para todos los residentes que garantiza igualdad de oportunidades.</p>
-                <button class="modal-close-btn">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal para Card 4 -->
-    <div class="modal-overlay" id="modal-4">
-        <div class="modal-content">
-            <div class="modal-carousel">
-                <div class="modal-carousel-slides">
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal4.1.jpg' %}" alt="Aventura 1">
-                    </div>
-                    <div class="modal-carousel-slide">
-                        <img src="{% static 'img/modal4.2.jpg' %}" alt="Aventura 2">
-                    </div>
-                </div>
-                <div class="modal-carousel-controls">
-                    <div class="modal-carousel-control active" data-index="0"></div>
-                    <div class="modal-carousel-control" data-index="1"></div>
-                </div>
-                <div class="modal-carousel-arrow prev"><i class="fas fa-chevron-left"></i></div>
-                <div class="modal-carousel-arrow next"><i class="fas fa-chevron-right"></i></div>
-            </div>
-            <div class="modal-info">
-                <h2 class="modal-title">Eventos por fecha</h2>
-                <p class="modal-description">Podras participar de increibles actividades que el conjunto realizara segun la fecha de festejo que se aproxime, disfrutaras de relejacion, canciones, divercion, y mucho mas.</p>
-                <button class="modal-close-btn">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
-<section class="contador-seccion d-flex align-items-center text-white text-center">
-        <div class="particulas" id="particulas"></div>
+    <!-- Sección Nosotros -->
+    <section id="nosotros" class="nosotros-section">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-4 contador-item" id="incremento">
-                    <div class="numero-container" data-target="15">
-                        <h2 class="numero" data-target="15">0</h2>
+            <div class="row align-items-center">
+                <!-- Columna de imagen única -->
+                <div class="col-lg-6 mb-5 mb-lg-0">
+                    <div class="single-image">
+                        <img src="{% static 'img/girl-3288623_1920.jpg' %}" alt="Imagen Nosotros">
                     </div>
-                    <p class="contador-texto">Conjunto residenciales<br>Registrados y en crecimiento</p>
                 </div>
-
-                <div class="col-md-4 contador-item">
-                    <div class="numero-container" data-target="12800">
-                        <h2 class="numero" data-target="12800">0</h2>
+                
+                <!-- Columna de contenido -->
+                <div class="col-lg-6">
+                    <div class="nosotros-content">
+                        <h2>Sobre Nosotros</h2>
+                        <p>En Altos de Fontibón nos enorgullece ofrecer un estilo de vida único y exclusivo para nuestros residentes. Hemos creado espacios que combinan comodidad, seguridad y comunidad.</p>
+                        <p>Nuestro conjunto residencial está diseñado pensando en el bienestar de cada familia, con amplias zonas verdes, áreas recreativas y servicios de primera calidad que hacen de Altos de Fontibón el lugar ideal para vivir.</p>
+                        <p>Nuestro equipo de profesionales está comprometido con brindar la mejor experiencia a nuestros residentes, garantizando un ambiente seguro, tranquilo y familiar donde cada detaje está cuidadosamente pensado para su comodidad.</p>
                     </div>
-                    <p class="contador-texto">Residentes Conectados y<br>en estadía</p>
-                </div>
-
-                <div class="col-md-4 contador-item">
-                    <div class="numero-container" data-target="32720">
-                        <h2 class="numero" data-target="32720">0</h2>
-                    </div>
-                    <p class="contador-texto">Clientes satisfechos con<br>nuestros servicios</p>
                 </div>
             </div>
         </div>
     </section>
 
-<!-- Sección de Testimonios -->
-    <section class="testimonios-seccion">
-        <div class="decoracion decoracion-1"></div>
-        <div class="decoracion decoracion-2"></div>
-        
-        <h2 class="testimonios-titulo" id="testimonios">TESTIMONIOS</h2>
-        
-        <div class="testimonios-contenedor">
-            <div class="testimonios-wrapper" id="testimoniosWrapper">
-                <!-- Testimonio 1 -->
-                <div class="testimonio-tarjeta active">
-                    <p class="testimonio-texto">
-                        Esta plataforma nos ayudó a comunicarnos más rápidamente con los vigilantes, a ser más ordenados en los registros de los ingresos y egresos, además de que los vecinos han podido promocionar sus servicios dentro de la misma privada.
-                    </p>
-                    <div class="testimonio-autor">
-                        <div class="calificacion-estrellas">
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                        </div>
-                        <h3 class="autor-nombre">Pablo Aristequieta</h3>
-                    </div>
-                </div>
-
-                <!-- Testimonio 2 -->
-                <div class="testimonio-tarjeta">
-                    <p class="testimonio-texto">
-                        Esta aplicación nos ayudó mucho para facilitarnos el manejo del dinero, además de que con su red social nos comunicamos de forma más rápida y ahorramos tiempo.
-                    </p>
-                    <div class="testimonio-autor">
-                        <div class="calificacion-estrellas">
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star-half-alt estrella"></i>
-                        </div>
-                        <h3 class="autor-nombre">Juan Cano</h3>
-                    </div>
-                </div>
-
-                <!-- Testimonio 3 -->
-                <div class="testimonio-tarjeta">
-                    <p class="testimonio-texto">
-                        Esta plataforma nos sirve mucho porque nos permite avisar a todos con tiempo y confirmar asistencia a las juntas.
-                    </p>
-                    <div class="testimonio-autor">
-                        <div class="calificacion-estrellas">
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                        </div>
-                        <h3 class="autor-nombre">Verónica Rodríguez</h3>
-                    </div>
-                </div>
-
-                <!-- Testimonio 4 -->
-                <div class="testimonio-tarjeta">
-                    <p class="testimonio-texto">
-                        Esta plataforma nos ayudó a comunicarnos más rápidamente con los vigilantes, a ser más ordenados en los registros de los ingresos y egresos, además de que los vecinos han podido promocionar sus servicios dentro de la misma privada.
-                    </p>
-                    <div class="testimonio-autor">
-                        <div class="calificacion-estrellas">
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="fas fa-star estrella"></i>
-                            <i class="far fa-star estrella"></i>
-                        </div>
-                        <h3 class="autor-nombre">Paulo Aristequieta</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Controles -->
-            <div class="testimonios-controls">
-                <button class="control-btn prev-btn">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                
-                <div class="indicadores" id="indicadores">
-                    <div class="indicador active" data-index="0"></div>
-                    <div class="indicador" data-index="1"></div>
-                    <div class="indicador" data-index="2"></div>
-                    <div class="indicador" data-index="3"></div>
+    <!-- Sección Zonas Comunes - MEJORADA -->
+    <section id="zonas" class="zonas-section">
+        <div class="container">
+            <h2 class="zonas-title">Nuestras Zonas Comunes</h2>
+            <div class="zonas-container">
+                <!-- Card 1 -->
+                <div class="zona-card">
+                    <i class="bi bi-tree-fill zona-icon"></i>
+                    <h3 class="zona-title">Zonas Verdes</h3>
+                    <p class="zona-desc">Amplias áreas verdes para relajarse y disfrutar de la naturaleza.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
                 </div>
                 
-                <button class="control-btn next-btn">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <!-- Card 2 -->
+                <div class="zona-card">
+                    <i class="bi bi-trophy-fill zona-icon"></i>
+                    <h3 class="zona-title">Gimnasio</h3>
+                    <p class="zona-desc">Espacio equipado con máquinas de ejercicio y pesas para tu entrenamiento físico.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="zona-card">
+                    <i class="bi bi-controller zona-icon"></i>
+                    <h3 class="zona-title">Salón de Juegos</h3>
+                    <p class="zona-desc">Diversión garantizada con mesas de billar, ping pong y juegos de mesa.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
+                </div>
+                
+                <!-- Card 4 -->
+                <div class="zona-card">
+                    <i class="bi bi-people-fill zona-icon"></i>
+                    <h3 class="zona-title">Salón Social Premium</h3>
+                    <p class="zona-desc">Amplio salón para eventos sociales y reuniones familiares.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
+                </div>
+                
+                <!-- Card 5 -->
+                <div class="zona-card">
+                    <i class="bi bi-emoji-smile zona-icon"></i>
+                    <h3 class="zona-title">Zona Infantil</h3>
+                    <p class="zona-desc">Parque infantil seguro con juegos modernos para niños.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
+                </div>
+                
+                <!-- Card 6 -->
+                <div class="zona-card">
+                    <i class="bi bi-fire zona-icon"></i>
+                    <h3 class="zona-title">Zona de BBQ</h3>
+                    <p class="zona-desc">Áreas designadas para parrillas y reuniones al aire libre.</p>
+                    <a href="{% url 'listar_zonas' %}" class="btn btn-zona">Ver Detalles</a>
+                </div>
             </div>
         </div>
     </section>
-  <!--Footer maps-->
-  <footer class="footer text-white">
-    <div class="container py-5">
-      <div class="row text-center text-md-start">
-        <!-- Columna 1: Contacto -->
-        <div class="col-md-4 mb-4">
-          <p><i class="bi bi-buildings fs-4 me-2" id="contacto"></i><strong>DIRECCIÓN</strong><br>Tv. 128 #17 - 87, Fontibón, Bogotá</p>
-          <p><i class="bi bi-envelope fs-4 me-2"></i><strong>CORREO ELECTRONICO</strong><br>ejemplo@altos.fontibon.com</p>
-          <p><i class="bi bi-telephone fs-4 me-2"></i><strong>TELEFONO</strong><br>+57 310 3157550</p>
-        </div>
 
-        <!-- Columna 2: Mapa -->
-        <div class="col-md-4 mb-4 text-center">
-          <h5 class="mb-3">Mi ubicación</h5>
-          <div class="mapa-container rounded overflow-hidden">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127246.01928156901!2d-74.24860269095439!3d4.6936868000000045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9d005cfb9c2f%3A0xb6b1c2126c54fd88!2sConjunto%20Residencial%20Altos%20de%20Fontibon!5e0!3m2!1ses!2sco!4v1762142136993!5m2!1ses!2sco" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <!-- Sección Servicios -->
+    <section id="servicios" class="servicios-section">
+        <div class="container">
+            <h2 class="servicios-title">Nuestros Servicios</h2>
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="servicio-card">
+                        <img src="{% static 'img/noticias.jpg' %}" alt="Servicio de Noticias" class="servicio-img">
+                        <div class="servicio-body">
+                            <h3 class="servicio-title">Noticias</h3>
+                            <p class="servicio-desc">Mantente informado con las últimas novedades y anuncios importantes de nuestro conjunto residencial.</p>
+                            <a href="{% url 'noticias' %}" class="btn btn-servicio">Conocer Más</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="servicio-card">
+                        <img src="{% static 'img/parqueadero.jpg' %}" alt="Servicio de Parqueadero" class="servicio-img">
+                        <div class="servicio-body">
+                            <h3 class="servicio-title">Sorteo Parqueadero</h3>
+                            <p class="servicio-desc">Amplios espacios de parqueadero cubierto y Sortiendo.</p>
+                            <a href="{% url 'lista_sorteos' %}" class="btn btn-servicio">Conocer Más</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="servicio-card">
+                        <img src="{% static 'img/zonas_comunes_servicios.jpg' %}" alt="Servicio de Zonas Recreativas" class="servicio-img">
+                        <div class="servicio-body">
+                            <h3 class="servicio-title">Zonas Recreativas</h3>
+                            <p class="servicio-desc">Disfruta de nuestras diversas áreas de esparcimiento y recreación para toda la familia.</p>
+                            <a href="{% url 'listar_zonas' %}" class="btn btn-servicio">Conocer Más</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card 4 -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="servicio-card">
+                        <img src="{% static 'img/paquetes.jpg' %}" alt="Servicio de Paqueteria" class="servicio-img">
+                        <div class="servicio-body">
+                            <h3 class="servicio-title">Paquetería</h3>
+                            <p class="servicio-desc">Servicio de recepción y custodia segura de paquetes y correspondencia para residentes.</p>
+                            <a href="{% url 'listar_zonas' %}" class="btn btn-servicio">Conocer Más</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        <!-- Columna 3: Horarios -->
-        <div class="col-md-4 mb-4">
-          <h5><i class="bi bi-clock fs-4 me-2"></i>Horarios de atención</h5>
-          <p><strong>Lunes a Viernes</strong><br>9:00 am - 5:00pm</p>
-          <p><strong>Sábados a Domingos</strong><br>9:00 am - 5:00pm</p>
+   <!-- Sección Contadores -->
+    <section id="contadores" 
+         class="contadores-section"
+         style="
+            background: linear-gradient(rgba(26, 71, 33, 0.8), rgba(26, 71, 33, 0.7)), 
+                        url('{% static 'img/img1_carrucel_conjunto.webp' %}') center/cover no-repeat;
+         ">
+    <div class="container">
+        <div class="row">
+
+            <!-- Contador 1 -->
+            <div class="col-md-4">
+                <div class="contador-item">
+                    <div class="contador-numero" data-target="15">0</div>
+                    <div class="contador-texto">Nuestro Equipo Administrativo</div>
+                </div>
+            </div>
+
+            <!-- Contador 2 -->
+            <div class="col-md-4">
+                <div class="contador-item">
+                    <div class="contador-numero" data-target="12800">0</div>
+                    <div class="contador-texto">Residentes Conectados y en estadía</div>
+                </div>
+            </div>
+
+            <!-- Contador 3 -->
+            <div class="col-md-4">
+                <div class="contador-item">
+                    <div class="contador-numero" data-target="32720">0</div>
+                    <div class="contador-texto">Clientes satisfechos con nuestros servicios</div>
+                </div>
+            </div>
+
         </div>
-      </div>
-
-      <!-- Redes sociales -->
-      <div class="d-flex justify-content-center gap-3 mb-3">
-        <a href="https://www.facebook.com" class="text-white fs-3"><i class="bi bi-facebook"></i></a>
-        <a href="#" class="text-white fs-3"><i class="bi bi-x"></i></a>
-        <a href="https://www.instagram.com" class="text-white fs-3"><i class="bi bi-instagram"></i></a>
-      </div>
-
-      <!-- Créditos -->
-      <p class="text-center small">Copyrights © 2019. Todos los derechos son reservados, Desarrollada en 
-        <a href="https://www.figma.com" class="text-white text-decoration-underline" target="_blank">Figma.com</a>
-      </p>
     </div>
-  </footer>
+</section>
+
+
+    <!-- Sección Reseñas - MEJORADA PARA MÓVILES -->
+    <section id="reseñas" class="reseñas-section">
+        <div class="container">
+            <h2 class="reseñas-title">Que Opinan Nuestros Residentes</h2>
+            
+            <div class="reseñas-carousel-container">
+                <div class="reseñas-track" id="reseñasTrack">
+                    <!-- Reseña 1 -->
+                    <div class="reseña-card active">
+                        <div class="reseña-header">
+                            <img src="{% static 'img/reseña_1.jpg' %}" alt="María González" class="reseña-img">
+                            <div class="reseña-info">
+                                <h3 class="reseña-name">María González</h3>
+                                <p class="reseña-role">Residente desde 2020</p>
+                            </div>
+                        </div>
+                        <div class="reseña-text">
+                            <span class="reseña-quote">"</span>
+                            Vivir en Altos de Fontibón ha sido la mejor decisión para nuestra familia. Las zonas verdes son perfectas para que nuestros hijos jueguen y la seguridad es excepcional.
+                        </div>
+                    </div>
+                    
+                    <!-- Reseña 2 -->
+                    <div class="reseña-card">
+                        <div class="reseña-header">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Carlos Rodríguez" class="reseña-img">
+                            <div class="reseña-info">
+                                <h3 class="reseña-name">Carlos Rodríguez</h3>
+                                <p class="reseña-role">Residente desde 2019</p>
+                            </div>
+                        </div>
+                        <div class="reseña-text">
+                            <span class="reseña-quote">"</span>
+                            La ubicación es perfecta, cerca de todo pero con la tranquilidad de un barrio residencial. Lo que más valoro son las zonas comunes, especialmente la piscina.
+                        </div>
+                    </div>
+                    
+                    <!-- Reseña 3 -->
+                    <div class="reseña-card">
+                        <div class="reseña-header">
+                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Ana Martínez" class="reseña-img">
+                            <div class="reseña-info">
+                                <h3 class="reseña-name">Ana Martínez</h3>
+                                <p class="reseña-role">Residente desde 2021</p>
+                            </div>
+                        </div>
+                        <div class="reseña-text">
+                            <span class="reseña-quote">"</span>
+                            Me encanta la sensación de comunidad que se vive aquí. Los vecinos son muy amables y siempre hay eventos en el salón social.
+                        </div>
+                    </div>
+                    
+                    <!-- Reseña 4 -->
+                    <div class="reseña-card">
+                        <div class="reseña-header">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Javier López" class="reseña-img">
+                            <div class="reseña-info">
+                                <h3 class="reseña-name">Javier López</h3>
+                                <p class="reseña-role">Residente desde 2018</p>
+                            </div>
+                        </div>
+                        <div class="reseña-text">
+                            <span class="reseña-quote">"</span>
+                            Como persona mayor, valoro mucho la seguridad y tranquilidad que ofrece este conjunto. Los espacios están bien diseñados para todas las edades.
+                        </div>
+                    </div>
+                    
+                    <!-- Reseña 5 -->
+                    <div class="reseña-card">
+                        <div class="reseña-header">
+                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80" alt="Laura Ramírez" class="reseña-img">
+                            <div class="reseña-info">
+                                <h3 class="reseña-name">Laura Ramírez</h3>
+                                <p class="reseña-role">Residente desde 2022</p>
+                            </div>
+                        </div>
+                        <div class="reseña-text">
+                            <span class="reseña-quote">"</span>
+                            Las instalaciones deportivas son excelentes. Uso la ciclovía todas las mañanas y los fines de semana disfruto con mi familia en la zona de BBQ.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controles del carrusel -->
+                <div class="reseñas-controls">
+                    <button class="btn btn-reseña" id="prevReseña">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-reseña" id="nextReseña">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Indicadores -->
+                <div class="reseñas-indicators" id="reseñasIndicators">
+                    <!-- Los indicadores se generarán con JavaScript -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer - NUEVO -->
+    <!-- Footer - NUEVO -->
+<footer id="contacto" class="footer-section">
+    <div class="container">
+        <div class="row">
+            <!-- Columna 1: Logo y descripción -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <img src="{% static 'img/logo.png' %}" alt="Logo Altos de Fontibón" class="footer-logo">
+                <p>
+                    Conjunto residencial Altos de Fontibón, donde la comodidad, seguridad y comunidad 
+                    se unen para ofrecerte el mejor estilo de vida.
+                </p>
+                <div class="footer-social">
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-twitter"></i></a>
+                    <a href="#"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Columna 2: Enlaces rápidos -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h4 class="footer-title">Enlaces Rápidos</h4>
+                <ul class="footer-links">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#servicios">Servicios</a></li>
+                    <li><a href="#nosotros">Nosotros</a></li>
+                    <li><a href="#zonas">Zonas Comunes</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 3: Contacto -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h4 class="footer-title">Contacto</h4>
+                <div class="footer-contact">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <div>
+                        <p>Calle 123 #45-67, Fontibón<br>Bogotá, Colombia</p>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <i class="bi bi-telephone-fill"></i>
+                    <div>
+                        <p>+57 (1) 123 4567</p>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <i class="bi bi-envelope-fill"></i>
+                    <div>
+                        <p>altosdefontibon.cr@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna 4: Mapa -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <h4 class="footer-title">Ubicación</h4>
+                <div class="footer-map">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785575729551!2d-74.1418529250199!3d4.638635642243863!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9bfd2da6e6e5%3A0x89c5d1b2c5b4b4b4!2sFontib%C3%B3n%2C%20Bogot%C3%A1!5e0!3m2!1ses!2sco!4v1641234567890!5m2!1ses!2sco" 
+                            allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor para el logo del desarrollador -->
+        <div class="footer-dev-container">
+            <img src="{% static 'img/Logo_SIGAF.png' %}" alt="Desarrollado por Empresa" class="footer-dev-logo">
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 Altos de Fontibón. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript personalizado -->
     <script src="{% static 'js/usuario/index.js' %}"></script>
 </body>
 </html>

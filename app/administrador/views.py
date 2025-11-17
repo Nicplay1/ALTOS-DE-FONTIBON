@@ -3,20 +3,29 @@ from usuario.models import *
 from usuario.decorators import *
 from django.contrib import messages
 from .forms import *
-import random
 from django.core.mail import send_mail
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
 from django.http import HttpResponse, JsonResponse
-from datetime import datetime
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_date
+
+# ReportLab
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image,
+)
+
+import random
+from datetime import datetime
+
 
 
 
@@ -34,31 +43,13 @@ def panel_general_admin(request):
 @rol_requerido([3])
 @login_requerido
 def gestionar_usuarios(request):
-    query = request.GET.get("q", "")
+
+    # Siempre inicializamos usuarios (así nunca habrá UnboundLocalError)
     usuarios = Usuario.objects.select_related("id_rol").all()
 
-    # Si es POST → actualizar rol vía AJAX
-    if request.method == "POST":
-        usuario_id = request.POST.get("usuario_id")
-        usuario = get_object_or_404(Usuario, pk=usuario_id)
-        form = CambiarRolForm(request.POST, instance=usuario)
+    query = request.GET.get("q", "")
 
-        if form.is_valid():
-            form.save()
-            mensaje = f"Rol de {usuario.nombres} actualizado correctamente."
-            status = "success"
-        else:
-            mensaje = "Error al actualizar el rol. Verifica los datos."
-            status = "error"
-
-        # Recargar la tabla después de actualizar
-        html = render_to_string("administrador/usuario/tabla_usuarios.html", {
-            "usuarios": Usuario.objects.select_related("id_rol").all(),
-            "roles": Rol.objects.all()
-        })
-        return JsonResponse({"html": html, "mensaje": mensaje, "status": status})
-
-    # Si es GET → búsqueda AJAX o carga normal
+    # --- BÚSQUEDA ---
     if query:
         palabras = query.split()
         for palabra in palabras:
@@ -68,15 +59,51 @@ def gestionar_usuarios(request):
                 Q(correo__icontains=palabra)
             )
 
-    # Si la petición es AJAX → solo retornamos la tabla
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    # --- ACTUALIZACIÓN DE ROL (POST AJAX) ---
+    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        user_id = request.POST.get("usuario_id")
+        nuevo_rol = request.POST.get("id_rol")
+
+        usuario = get_object_or_404(Usuario, pk=user_id)
+        rol = get_object_or_404(Rol, pk=nuevo_rol)
+
+        usuario.id_rol = rol
+        usuario.save()
+
+        # Re-render tabla
+        usuarios = Usuario.objects.select_related("id_rol").all()
+        roles = Rol.objects.all()
         html = render_to_string("administrador/usuario/tabla_usuarios.html", {
+            "usuarios": usuarios,
+            "roles": roles
+        })
+
+        # Enviar por WebSocket
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "usuarios_group",
+            {
+                "type": "usuarios_update",
+                "action": "refresh",
+                "html": html,
+                "changed_usuario_id": usuario.id_usuario,
+                "changed_rol_id": rol.id_rol,
+            }
+        )
+
+        return JsonResponse({
+            "status": "success",
+            "message": f"Rol de {usuario.nombres} cambiado a {rol.nombre_rol}"
+        })
+
+    # --- RESPUESTA AJAX PARA ACTUALIZAR TABLA ---
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return render(request, "administrador/usuario/tabla_usuarios.html", {
             "usuarios": usuarios,
             "roles": Rol.objects.all()
         })
-        return JsonResponse({"html": html})
 
-    # Carga normal con todo el template
+    # --- CARGA NORMAL ---
     return render(request, "administrador/usuario/gestionar_usuarios.html", {
         "usuarios": usuarios,
         "roles": Rol.objects.all(),
@@ -97,10 +124,18 @@ def gestionar_reservas(request):
         form = EditarReservaForm(request.POST, instance=reserva)
 
         if form.is_valid():
-            form.save()
+            reserva = form.save()
 
-            # ✅ Notificación realtime
-            enviar_reservas_ws()
+            # 🔥 ENVIAR EVENTO CORRECTO (que SI EXISTE en el consumer)
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "reservas_group",
+                {
+                    "type": "reservas_update",   # ← ESTE SÍ EXISTE
+                    "action": "updated",
+                    "reserva_id": reserva.id_reserva,
+                }
+            )
 
             messages.success(request, f"Reserva {reserva.id_reserva} actualizada correctamente.")
             return redirect("gestionar_reservas")

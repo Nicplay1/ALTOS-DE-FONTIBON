@@ -1,56 +1,93 @@
-<table class="table table-hover mb-0">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Nombre Completo</th>
-            <th>Correo</th>
-            <th>Celular</th>
-            <th>Rol Actual</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for usuario in usuarios %}
-        <tr>
-            <td><strong>{{ forloop.counter }}</strong></td>
-            <td>{{ usuario.nombres }} {{ usuario.apellidos }}</td>
-            <td>{{ usuario.correo }}</td>
-            <td>{{ usuario.celular }}</td>
-            <td>
-                {% if usuario.id_rol.nombre_rol == "Admin" %}
-                    <span class="role-badge badge-admin"><i class="fas fa-crown"></i> {{ usuario.id_rol.nombre_rol }}</span>
-                {% elif usuario.id_rol.nombre_rol == "Usuario" %}
-                    <span class="role-badge badge-usuario"><i class="fas fa-user"></i> {{ usuario.id_rol.nombre_rol }}</span>
-                {% elif usuario.id_rol.nombre_rol == "Vigilante" %}
-                    <span class="role-badge badge-editor"><i class="fas fa-edit"></i> {{ usuario.id_rol.nombre_rol }}</span>
-                {% else %}
-                    <span class="role-badge badge-otro"><i class="fas fa-user-tag"></i> {{ usuario.id_rol.nombre_rol }}</span>
-                {% endif %}
-            </td>
-            <td>
-                <form method="post" class="role-form" data-user-id="{{ usuario.id_usuario }}" data-user-name="{{ usuario.nombres }} {{ usuario.apellidos }}">
-                    {% csrf_token %}
-                    <input type="hidden" name="usuario_id" value="{{ usuario.id_usuario }}">
-                    <select name="id_rol" class="form-select-modern">
-                        {% for rol in roles %}
-                            <option value="{{ rol.id_rol }}" {% if rol.id_rol == usuario.id_rol.id_rol %}selected{% endif %}>{{ rol.nombre_rol }}</option>
+<!-- Contenedor para scroll horizontal -->
+<div class="table-container">
+    <!-- TABLA para desktop -->
+    <table class="table table-hover align-middle">
+        <thead class="table-header-gradient">
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Documento</th>
+                <th>Celular</th>
+                <th>Rol Actual</th>
+                <th>Cambiar Rol</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td class="nombre-usuario">{{ u.nombres }} {{ u.apellidos }}</td>
+                <td>{{ u.correo }}</td>
+                <td>{{ u.numero_documento }}</td>
+                <td>{{ u.celular }}</td>
+                <td>
+                    <span class="{% if u.id_rol.id_rol == 1 %}rol-Usuario{% endif %}
+                                 {% if u.id_rol.id_rol == 2 %}rol-Residente{% endif %}
+                                 {% if u.id_rol.id_rol == 3 %}rol-Admin{% endif %}
+                                 {% if u.id_rol.id_rol == 4 %}rol-Vigilante{% endif %}">
+                        <i class="{% if u.id_rol.id_rol == 1 %}fas fa-user{% endif %}
+                                  {% if u.id_rol.id_rol == 2 %}fas fa-home{% endif %}
+                                  {% if u.id_rol.id_rol == 3 %}fas fa-crown{% endif %}
+                                  {% if u.id_rol.id_rol == 4 %}fas fa-shield-alt{% endif %} me-2"></i>
+                        {{ u.id_rol.nombre_rol }}
+                    </span>
+                </td>
+                <td>
+                    <select class="form-select rol-select" data-user="{{ u.id_usuario }}">
+                        <option disabled selected>Cambiar Rol</option>
+                        {% for r in roles %}
+                            <option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>
                         {% endfor %}
                     </select>
-                    <button type="button" class="btn-modern change-role-btn">
-                        <i class="fas fa-sync-alt"></i> Cambiar
-                    </button>
-                </form>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <div>No se encontraron usuarios.</div>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-user-slash fa-4x mb-3" style="color: #94a3b8;"></i>
+                        <h4 class="text-muted">No se encontraron usuarios</h4>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- CARDS para mobile -->
+<div class="d-md-none">
+    {% for u in usuarios %}
+    <div class="card card-usuario mb-3 shadow-sm p-2">
+        <div class="card-body">
+            <h5 class="card-title nombre-usuario">{{ u.nombres }} {{ u.apellidos }}</h5>
+            <p class="mb-1"><strong>Correo:</strong> {{ u.correo }}</p>
+            <p class="mb-1"><strong>Documento:</strong> {{ u.numero_documento }}</p>
+            <p class="mb-1"><strong>Celular:</strong> {{ u.celular }}</p>
+            <p class="mb-1">
+                <strong>Rol Actual:</strong>
+                <span class="{% if u.id_rol.id_rol == 1 %}rol-Usuario{% endif %}
+                             {% if u.id_rol.id_rol == 2 %}rol-Residente{% endif %}
+                             {% if u.id_rol.id_rol == 3 %}rol-Admin{% endif %}
+                             {% if u.id_rol.id_rol == 4 %}rol-Vigilante{% endif %}">
+                    <i class="{% if u.id_rol.id_rol == 1 %}fas fa-user{% endif %}
+                              {% if u.id_rol.id_rol == 2 %}fas fa-home{% endif %}
+                              {% if u.id_rol.id_rol == 3 %}fas fa-crown{% endif %}
+                              {% if u.id_rol.id_rol == 4 %}fas fa-shield-alt{% endif %} me-2"></i>
+                    {{ u.id_rol.nombre_rol }}
+                </span>
+            </p>
+            <select class="form-select rol-select mt-2" data-user="{{ u.id_usuario }}">
+                <option disabled selected>Cambiar Rol</option>
+                {% for r in roles %}
+                    <option value="{{ r.id_rol }}">{{ r.nombre_rol }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state text-center py-5">
+        <i class="fas fa-user-slash fa-4x mb-3" style="color: #94a3b8;"></i>
+        <h4 class="text-muted">No se encontraron usuarios</h4>
+    </div>
+    {% endfor %}
+</div>

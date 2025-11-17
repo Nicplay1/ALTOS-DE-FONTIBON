@@ -1,80 +1,77 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Recuperar Contraseña - Altos de Fontibón</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/usuario/solicitar_reset.css' %}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Fontibon Contigo</title>
 
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'img/1.png' %}" type="image/png">
+
+    <!-- Fuentes y estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/usuario/solicitar_reset.css' %}">
 </head>
+
 <body>
-    <!-- Notificaciones -->
-    {% if messages %}
-    <div class="alert-container">
-        {% for message in messages %}
-            <div class="alert-modern alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% else %}info{% endif %}" role="alert">
-                {% if message.tags == "success" %}
-                    <i class="fas fa-check-circle"></i>
-                {% elif message.tags == "error" %}
-                    <i class="fas fa-times-circle"></i>
-                {% else %}
-                    <i class="fas fa-info-circle"></i>
-                {% endif %}
-                <div>{{ message }}</div>
-            </div>
-        {% endfor %}
-    </div>
+    <!-- Contenedor para alertas -->
+    <div class="alert-container" id="alertContainer"></div>
 
-    {% endif %}
+    <div class="reset-container">
+        <div class="logo-container">
+            <a href="{% url 'index' %}" class="logo">
+                <img src="{% static 'img/LOGO.png' %}" alt="Logo">
+            </a>
 
-    <!-- Contenedor principal centrado -->
-    <div class="password-container">
-        <!-- Cuerpo del formulario -->
-        <div class="password-body">
-            <div class="logo">
-                <img src="{% static 'img/Logo Fontibon.png' %}" alt="Altos de Fontibón">
-                <h3 class="form-title">Recuperar Contraseña</h3>
-                <p class="form-subtitle">Ingresa tus datos para recibir un enlace de recuperación</p>
-            </div>
-
-            <form method="post" class="form-modern">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label class="form-label">Documento:</label>
-                    <input type="text" name="documento" class="form-input" required placeholder="Ingresa tu número de documento">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Correo Electrónico:</label>
-                    <input type="email" name="correo" class="form-input" required placeholder="ejemplo@correo.com">
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-paper-plane"></i>
-                    Enviar Enlace
-                </button>
-
-                <div class="nav-buttons">
-                    <a href="{% url 'login' %}" class="nav-btn">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Iniciar Sesión
-                    </a>
-                    <a href="{% url 'index' %}" class="nav-btn">
-                        <i class="fas fa-home"></i>
-                        Ir al Inicio
-                    </a>
-                </div>
-
-                <div class="links">
-                    <p>¿Recordaste tu contraseña? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
-                </div>
-            </form>
+            <h1>Recuperar Contraseña</h1>
+            <div class="subtitle">¡Fontibon Contigo!</div>
         </div>
+
+        <p class="instruction">Ingresa tu correo y documento para recibir un enlace de recuperación</p>
+
+        <!-- Formulario -->
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Correo electrónico -->
+            <div class="form-group">
+                <i class="input-icon fas fa-envelope"></i>
+                <input type="email" id="correo" name="correo" class="form-input" placeholder=" " required>
+                <label for="correo" class="form-label">Correo electrónico</label>
+                <div id="correo-error" class="error-message"></div>
+            </div>
+
+            <!-- Número de documento -->
+            <div class="form-group">
+                <i class="input-icon fas fa-id-card"></i>
+                <input type="text" id="documento" name="documento" class="form-input" placeholder=" " required>
+                <label for="documento" class="form-label">Número de documento</label>
+                <div id="documento-error" class="error-message"></div>
+            </div>
+
+            <button type="submit" class="reset-btn">Enviar enlace de recuperación</button>
+
+            <div class="back-link">
+                <a href="{% url 'login' %}">← Volver al inicio de sesión</a>
+            </div>
+        </form>
     </div>
+
     <script src="{% static 'js/usuario/solicitar_reset.js' %}"></script>
+
+    {% if messages %}
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                {% for message in messages %}
+                    showAlert("{{ message }}", 
+                        "{{ message.tags|default:'error' }}".includes("success") ? "success" : "error"
+                    );
+                {% endfor %}
+            });
+        </script>
+    {% endif %}
 </body>
 </html>

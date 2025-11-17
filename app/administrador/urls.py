@@ -15,7 +15,7 @@ path("noticias/eliminar/<int:id_noticia>/", views.eliminar_noticia, name="elimin
 path('vehiculos/', views.lista_vehiculos, name='lista_vehiculos'),
 path('vehiculo/<int:pk>/', views.detalle_vehiculo, name='detalle_vehiculo'),
 path('activar_validacion/', views.activar_validacion, name='activar_validacion'),
-    path('finalizar_validacion/', views.finalizar_validacion, name='finalizar_validacion'),
+path('finalizar_validacion/', views.finalizar_validacion, name='finalizar_validacion'),
     
 path('sorteos/', views.sorteos_list_create, name='sorteos_list_create'),
 

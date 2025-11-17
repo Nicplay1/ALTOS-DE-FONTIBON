@@ -11,6 +11,7 @@ def login_requerido(view_func):
         usuario_id = request.session.get('usuario_id')
 
         if not usuario_id:
+            messages.warning(request, "Debes iniciar sesión para continuar.")
             return redirect('login')
 
         try:
@@ -18,11 +19,11 @@ def login_requerido(view_func):
             request.usuario = usuario
         except Usuario.DoesNotExist:
             request.session.flush()
+            messages.warning(request, "Debes iniciar sesión para continuar.")
             return redirect('login')
 
         return view_func(request, *args, **kwargs)
     return _wrapped_view
-
 
 
 def rol_requerido(roles_permitidos):

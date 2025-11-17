@@ -23,19 +23,19 @@ class Command(BaseCommand):
         # ------------------ ZONA COMUN ------------------
         zonas = [
             ('Gimnasio', 50, 'Evento', 30000.00),
-            ('Zona yoga', 30, 'Por hora', 30000.00),
-            ('Salón de juegos', 40, 'Franja horaria', 2000.00),
+            ('Zona Yoga', 30, 'Por hora', 30000.00),
+            ('Salón de Juegos', 40, 'Franja horaria', 2000.00),
             ('Lavandería', 10, 'Franja horaria', 4000.00),
             ('Zona crearte', 10, 'Evento', 100000.00),
-            ('Salón social premium', 15, 'Evento', 250000.00),
+            ('Salón Social Premium', 15, 'Evento', 250000.00),
             ('Salón social', 40, 'Evento', 150000.00),
             ('Oratorio', 40, 'Franja horaria', 1000.00),
-            ('Salón infantil', 25, 'Franja horaria', 1000.00),
-            ('Zona juegos infantil', 20, 'Franja horaria', 0.00),
+            ('Salón Infantil', 25, 'Franja horaria', 1000.00),
+            ('Zona Juegos Infantil', 20, 'Franja horaria', 0.00),
             ('Cancha libre', 30, 'Por hora', 10000.00),
-            ('Zona bbq 1', 8, 'Evento', 50000.00),
-            ('Zona bbq 2', 8, 'Evento', 50000.00),
-            ('Zonas verdes', 0, 'Franja horaria', 0.00),
+            ('Zona BBQ 1', 8, 'Evento', 50000.00),
+            ('Zona BBQ 2', 8, 'Evento', 50000.00),
+            ('Zonas Verdes', 0, 'Franja horaria', 0.00),
         ]
         for nombre, capacidad, tipo, tarifa in zonas:
             obj, created = ZonaComun.objects.get_or_create(
