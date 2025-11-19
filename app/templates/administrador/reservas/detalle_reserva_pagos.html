@@ -1,130 +1,63 @@
 {% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Reserva</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+    <h2>Detalle Reserva #{{ reserva.id_reserva }}</h2>
 
-<main class="main-content" id="mainContent">
+    <form method="POST">
+        {% csrf_token %}
 
-    <div class="content-header">
-        <h1 class="page-title">
-            <i class="fas fa-calendar-check"></i>
-            Detalle Reserva: #{{ reserva.id_reserva }}
-        </h1>
-    </div>
+        <h4>Información de la Reserva</h4>
+        <ul class="list-group mb-3">
+            <li class="list-group-item"><strong>Usuario:</strong> {{ reserva.cod_usuario.nombres }} {{ reserva.cod_usuario.apellidos }}</li>
+            <li class="list-group-item"><strong>Zona:</strong> {{ reserva.cod_zona.nombre_zona }}</li>
+            <li class="list-group-item"><strong>Fecha de reserva:</strong> {{ reserva.fecha_reserva }}</li>
+            <li class="list-group-item"><strong>Fecha de uso:</strong> {{ reserva.fecha_uso }}</li>
+            <li class="list-group-item"><strong>Hora inicio:</strong> {{ reserva.hora_inicio }}</li>
+            <li class="list-group-item"><strong>Hora fin:</strong> {{ reserva.hora_fin }}</li>
+            <li class="list-group-item"><strong>Forma de pago:</strong> {{ reserva.forma_pago }}</li>
+            <li class="list-group-item"><strong>Valor:</strong> ${{ reserva.valor_pago }}</li>
+        </ul>
 
-    <div class="content-body">
-        <a href="{% url 'gestionar_reservas' %}" class="back-link mb-3 d-inline-block">
-            <i class="fas fa-arrow-left me-2"></i>
-            Volver a Reservas
-        </a>
-
-        <!-- FORMULARIO PARA EDITAR RESERVA -->
-        <form method="POST" id="form-reserva">
-            {% csrf_token %}
-            <input type="hidden" name="reserva_id" value="{{ reserva.id_reserva }}">
-            
-            <div class="reserva-container d-flex gap-4 flex-wrap">
-
-                <!-- Información actual de la reserva -->
-                <div class="content-card reserva-info flex-grow-1">
-                    <h3 class="card-title"><i class="fas fa-info-circle"></i> Información de la Reserva</h3>
-
-                    <div class="mb-3"><strong>Zona:</strong> {{ reserva.cod_zona.nombre_zona }}</div>
-                    <div class="mb-3"><strong>Usuario:</strong> {{ reserva.cod_usuario.nombres }} {{ reserva.cod_usuario.apellidos }}</div>
-                    <div class="mb-3"><strong>Fecha de Uso:</strong> {{ reserva.fecha_uso }}</div>
-                    <div class="mb-3"><strong>Hora:</strong> {{ reserva.hora_inicio }} - {{ reserva.hora_fin }}</div>
-                    <div class="mb-3"><strong>Forma de Pago:</strong> {{ reserva.forma_pago }}</div>
-                    <div class="mb-3"><strong>Pago:</strong> ${{ reserva.valor_pago }}</div>
-
-                    <div class="mb-3">
-                        <strong>Estado:</strong>
-                        <span class="badge 
-                            {% if reserva.estado == 'Aprobada' %}badge-success
-                            {% elif reserva.estado == 'Rechazada' %}badge-danger
-                            {% else %}badge-warning
-                            {% endif %}
-                        ">
-                            {{ reserva.estado }}
-                        </span>
-                    </div>
-
-                    <div class="mb-3"><strong>Observación:</strong> {{ reserva.observacion|default:"-" }}</div>
-                </div>
-
-                <!-- Formulario edición -->
-                <div class="content-card reserva-edit flex-grow-1">
-                    <h3 class="card-title"><i class="fas fa-edit"></i> Editar Reserva</h3>
-
-                    {% for field in form_reserva %}
-                        <div class="form-group mb-3">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endfor %}
-
-                    <button type="submit" class="btn btn-primary mt-2">Guardar Cambios</button>
-                </div>
-
-            </div>
-        </form>
-
-        <!-- PAGOS DE LA RESERVA -->
-        <div class="content-card mt-4">
-            <h3 class="card-title"><i class="fas fa-money-bill-wave"></i> Pagos Asociados</h3>
-
-            <div id="tabla-pagos-reserva">
-                {% include 'administrador/reservas/tabla_pagos_reserva.html' %}
-            </div>
+        <div class="mb-3">
+            {{ reserva_form.observacion.label_tag }}
+            {{ reserva_form.observacion }}
         </div>
-    </div>
-</main>
+        <div class="mb-3">
+            {{ reserva_form.estado.label_tag }}
+            {{ reserva_form.estado }}
+        </div>
 
+        <h4>Pagos</h4>
+        {% for pago in pagos %}
+            <div class="mb-2 p-2 border rounded">
+                <p><strong>Pago #{{ pago.id_pago }}</strong> - Subido: {{ pago.fecha_subida }}</p>
+                <p>Archivos: 
+                    <a href="{{ pago.archivo_1.url }}" target="_blank">Archivo 1</a>
+                    {% if pago.archivo_2 %} | <a href="{{ pago.archivo_2.url }}" target="_blank">Archivo 2</a>{% endif %}
+                </p>
+                <div class="mb-3">
+                    <label for="pagos_{{ pago.id_pago }}"><strong>Estado del pago</strong></label>
+                    <select name="pagos_{{ pago.id_pago }}" id="pagos_{{ pago.id_pago }}" class="form-select">
+                        <option value="En espera" {% if pago.estado == 'En espera' %}selected{% endif %}>En espera</option>
+                        <option value="Aprobado" {% if pago.estado == 'Aprobado' %}selected{% endif %}>Aprobado</option>
+                        <option value="Rechazado" {% if pago.estado == 'Rechazado' %}selected{% endif %}>Rechazado</option>
+                    </select>
+                </div>
+            </div>
+        {% empty %}
+            <p>No hay pagos asociados.</p>
+        {% endfor %}
 
-<!-- WEBSOCKET PARA ACTUALIZAR PAGOS EN TIEMPO REAL -->
-<script>
-(function () {
-    const reservaId = "{{ reserva.id_reserva }}";
-
-    const socket = new WebSocket(
-        (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.host +
-        "/ws/pagos-reserva/" + reservaId + "/"
-    );
-
-    socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
-
-        if (["created", "updated", "deleted"].includes(data.action)) {
-            document.getElementById("tabla-pagos-reserva").innerHTML = data.html;
-        }
-    };
-
-    socket.onclose = function () {
-        console.log("WebSocket cerrado. Reintentando...");
-        setTimeout(() => location.reload(), 5000);
-    };
-})();
-</script>
-
-
-<!-- CAMBIO DE ESTADO DE PAGO (AJAX) -->
-<script>
-function actualizarEstadoPago(input, pagoId) {
-    const estado = input.checked ? "True" : "False";
-
-    fetch("", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": "{{ csrf_token }}",
-            "X-Requested-With": "XMLHttpRequest",
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-            "pago_id": pagoId,
-            "estado": estado,
-        })
-    });
-}
-
-// Guardar reserva recarga página completa
-document.getElementById("form-reserva").addEventListener("submit", function() {
-    this.submit();
-});
-</script>
+        <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
+    </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

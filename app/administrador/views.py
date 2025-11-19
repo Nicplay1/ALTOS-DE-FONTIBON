@@ -8,6 +8,8 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.utils.dateparse import parse_date
+from django.forms import modelformset_factory
+
 
 # ReportLab
 from reportlab.lib import colors
@@ -118,76 +120,49 @@ def gestionar_usuarios(request):
 @rol_requerido([3])
 @login_requerido
 def gestionar_reservas(request):
+    # Trae todas las reservas con usuario y zona relacionados, ordenadas por fecha
     reservas = Reserva.objects.select_related("cod_usuario", "cod_zona").all().order_by("-fecha_reserva")
 
-    if request.method == "POST":
-        reserva_id = request.POST.get("reserva_id")
-        reserva = get_object_or_404(Reserva, pk=reserva_id)
-        form = EditarReservaForm(request.POST, instance=reserva)
-
-        if form.is_valid():
-            reserva = form.save()
-
-            # 🔥 ENVIAR EVENTO CORRECTO (que SI EXISTE en el consumer)
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "reservas_group",
-                {
-                    "type": "reservas_update",   # ← ESTE SÍ EXISTE
-                    "action": "updated",
-                    "reserva_id": reserva.id_reserva,
-                }
-            )
-
-            messages.success(request, f"Reserva {reserva.id_reserva} actualizada correctamente.")
-            return redirect("gestionar_reservas")
-
-    else:
-        form = EditarReservaForm()
-
+    # Renderiza la plantilla con las reservas
     return render(request, "administrador/reservas/gestionar_reservas.html", {
-        "reservas": reservas,
-        "form": form
+        "reservas": reservas
     })
 
 
-@rol_requerido([3])
 @login_requerido
 def detalle_reserva_con_pagos(request, id_reserva):
-
     reserva = get_object_or_404(Reserva, pk=id_reserva)
     pagos = PagosReserva.objects.filter(id_reserva=reserva)
 
-    # AJAX →
-    if request.method == "POST" and request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        try:
-            pago_id = request.POST.get("pago_id")
-            estado_str = request.POST.get("estado")
-            nuevo_estado = True if estado_str == "True" else False
+    if request.method == "POST":
+        # Actualizar reserva
+        reserva_form = ReservaForm(request.POST, instance=reserva)
+        if reserva_form.is_valid():
+            reserva_form.save()
+            messages.success(request, "Reserva actualizada correctamente.")
 
-            pago = get_object_or_404(PagosReserva, pk=pago_id)
-            pago.estado = nuevo_estado
-            pago.save()   # ← dispara señal correctamente
+        # Actualizar pagos
+        for pago in pagos:
+            estado_key = f'pagos_{pago.id_pago}'
+            if estado_key in request.POST:
+                pago.estado = request.POST.get(estado_key)
+                pago.save()
+        messages.success(request, "Pagos actualizados correctamente.")
 
-            return JsonResponse({"status": "success"})
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+        return redirect('detalle_reserva_con_pagos', id_reserva=id_reserva)
 
-    # FORM NORMAL
-    if request.method == "POST" and "reserva_id" in request.POST:
-        form_reserva = EditarReservaForm(request.POST, instance=reserva)
-        if form_reserva.is_valid():
-            form_reserva.save()
-            messages.success(request, f"Reserva #{reserva.id_reserva} actualizada.")
-            return redirect("detalle_reserva_con_pagos", id_reserva=id_reserva)
     else:
-        form_reserva = EditarReservaForm(instance=reserva)
+        reserva_form = ReservaForm(instance=reserva)
 
-    return render(
-        request,
-        "administrador/reservas/detalle_reserva_pagos.html",
-        {"reserva": reserva, "pagos": pagos, "form_reserva": form_reserva}
-    )
+    context = {
+        'reserva': reserva,
+        'reserva_form': reserva_form,
+        'pagos': pagos,
+    }
+    return render(request, 'administrador/reservas/detalle_reserva_pagos.html', context)
+
+
+
 
 @rol_requerido([3])
 @login_requerido

@@ -335,7 +335,11 @@ class PagosReserva(models.Model):
     fecha_subida = models.DateTimeField(auto_now_add=True)
     archivo_1 = models.FileField(upload_to='pagos/')
     archivo_2 = models.FileField(upload_to='pagos/', null=True, blank=True)
-    estado = models.BooleanField(default=False)
+    estado = models.CharField(
+        max_length=15,
+        choices=[('En espera', 'En espera'), ('Aprobado', 'Aprobado'), ('Rechazado', 'Rechazado')],
+        default='En espera'
+    )
     id_reserva = models.ForeignKey(Reserva, on_delete=models.CASCADE)
 
     class Meta:

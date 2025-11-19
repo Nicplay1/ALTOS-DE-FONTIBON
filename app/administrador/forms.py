@@ -9,21 +9,23 @@ class CambiarRolForm(forms.ModelForm):
         labels = {'id_rol': 'Rol'}
 
 
-class EditarReservaForm(forms.ModelForm):
+
+
+class ReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
-        fields = ["observacion", "estado"]  # Nombres exactos
-        labels = {
-            "observacion": "Observación",
-            "estado": "Estado"
-        }
+        fields = ['observacion', 'estado']
         widgets = {
-            "observacion": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 2,
-                "placeholder": "Escribe una observación..."
-            }),
-            "estado": forms.Select(attrs={"class": "form-select-modern"})
+            'observacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'estado': forms.Select(attrs={'class': 'form-select'})
+        }
+
+class PagoForm(forms.ModelForm):
+    class Meta:
+        model = PagosReserva
+        fields = ['estado']
+        widgets = {
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'})
         }
 
 
@@ -82,11 +84,3 @@ class SorteoForm(forms.ModelForm):
             raise forms.ValidationError("No puedes seleccionar una fecha pasada.")
         return fecha
 
-
-class EstadoPagoForm(forms.ModelForm):
-    class Meta:
-        model = PagosReserva
-        fields = ["estado"]  # Campo exacto
-        widgets = {
-            "estado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
-        }

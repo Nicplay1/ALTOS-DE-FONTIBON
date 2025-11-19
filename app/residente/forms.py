@@ -125,14 +125,13 @@ class ArchivoVehiculoForm(forms.ModelForm):
 
 
 # ---------------- PAGOS RESERVA ----------------
-class PagosReservaForm(forms.ModelForm):
+
+
+class SubirPagoForm(forms.ModelForm):
     class Meta:
         model = PagosReserva
-        fields = ['id_reserva', 'archivo_1', 'archivo_2', 'estado']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["id_reserva"].widget = forms.HiddenInput()
-        self.fields["estado"].widget = forms.HiddenInput()
-        self.fields["archivo_1"].widget.attrs.update({"class": "form-control", "accept": ".pdf,.jpg,.jpeg,.png"})
-        self.fields["archivo_2"].widget.attrs.update({"class": "form-control", "accept": ".pdf,.jpg,.jpeg,.png"})
+        fields = ['archivo_1', 'archivo_2']
+        widgets = {
+            'archivo_1': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'archivo_2': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }

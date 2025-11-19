@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import now
+import os
 
 
 #PANEL GENERAL RESIDENTE
@@ -244,62 +245,37 @@ def eliminar_reserva(request, id_reserva):
 
 
 # LISTAR ZONAS COMUNES - AGREGAR PAGO A RESERVA
-@rol_requerido([2])
+
+
 @login_requerido
 def agregar_pago(request, id_reserva):
+    reserva = get_object_or_404(Reserva, pk=id_reserva, cod_usuario=request.usuario)
+    pago, created = PagosReserva.objects.get_or_create(id_reserva=reserva)
 
-    reserva_obj = get_object_or_404(Reserva, pk=id_reserva)
-    pagos = PagosReserva.objects.filter(id_reserva=reserva_obj).order_by("-id_pago")
-    pago_actual = pagos.first()
+    if request.method == 'POST':
+        archivo_1 = request.FILES.get('archivo_1')
+        archivo_2 = request.FILES.get('archivo_2')
 
-    pago_editar = None
-    form = None
+        if archivo_1:
+            pago.archivo_1 = archivo_1
+        if archivo_2:
+            pago.archivo_2 = archivo_2
 
-    # ---- EDITAR EXISTENTE ----
-    editar_pago_id = request.GET.get("editar_pago")
-    if editar_pago_id:
-        pago_editar = get_object_or_404(PagosReserva, pk=editar_pago_id, id_reserva=reserva_obj)
-        if pago_editar.estado:
-            messages.error(request, "El pago ya fue aprobado. No puedes editarlo.")
-            return redirect("agregar_pago", id_reserva=id_reserva)
+        pago.save()
+        messages.success(request, "Archivo(s) actualizado(s) correctamente.")
+        return redirect('agregar_pago', id_reserva=id_reserva)
 
-    # ---- POST: EDITAR ----
-    if request.method == "POST" and "guardar_edicion" in request.POST:
-        pago_editar = get_object_or_404(PagosReserva, pk=request.POST.get("pago_id"))
+    nombre_archivo_1 = os.path.basename(pago.archivo_1.name) if pago.archivo_1 else None
+    nombre_archivo_2 = os.path.basename(pago.archivo_2.name) if pago.archivo_2 else None
 
-        form = PagosReservaForm(request.POST, request.FILES, instance=pago_editar)
-        if form.is_valid():
-            form.save()     # ← dispara señal
-            request.session["mostrar_alerta"] = "Comprobante actualizado."
-            return redirect("agregar_pago", id_reserva=id_reserva)
+    context = {
+        'reserva': reserva,
+        'pago': pago,
+        'nombre_archivo_1': nombre_archivo_1,
+        'nombre_archivo_2': nombre_archivo_2,
+    }
+    return render(request, 'residente/zonas_comunes/pago_reserva.html', context)
 
-    # ---- POST: NUEVO PAGO ----
-    if request.method == "POST" and "nuevo_pago" in request.POST:
-        if pago_actual and pago_actual.estado:
-            messages.error(request, "El administrador ya aprobó un pago. No puedes subir más.")
-            return redirect("agregar_pago", id_reserva=id_reserva)
-
-        form = PagosReservaForm(request.POST, request.FILES)
-        if form.is_valid():
-            pago = form.save(commit=False)
-            pago.id_reserva = reserva_obj
-            pago.estado = False
-            pago.save()      # ← dispara señal
-            request.session["mostrar_alerta"] = "Comprobante subido."
-            return redirect("agregar_pago", id_reserva=id_reserva)
-
-    return render(
-        request,
-        "residente/zonas_comunes/pago_reserva.html",
-        {
-            "reserva": reserva_obj,
-            "pagos": pagos,
-            "pago_actual": pago_actual,
-            "pago_editar": pago_editar,
-            "form": form,
-            "mostrar_alerta": request.session.pop("mostrar_alerta", None),
-        },
-    )
 
 
 # DETALLES DE UN VEHÍCULO Y GESTIÓN DE ARCHIVOS
