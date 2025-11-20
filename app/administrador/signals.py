@@ -4,6 +4,8 @@ from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from usuario.models import *
+from datetime import date
+
 
 
 # ------------------------------
@@ -180,3 +182,67 @@ def pago_creado_o_actualizado(sender, instance, created, **kwargs):
     enviar_pago_a_residente(instance)
 
 
+def enviar_sorteos_a_residente(usuario):
+    channel_layer = get_channel_layer()
+    detalle = DetalleResidente.objects.filter(cod_usuario=usuario).first()
+
+    if not detalle:
+        return
+
+    # Obtener si el residente tiene documentos válidos
+    vehiculo = VehiculoResidente.objects.filter(cod_usuario=usuario).first()
+    tiene_docs = vehiculo.documentos if vehiculo else False
+
+    # Filtrar por tipo de residente
+    if detalle.propietario:
+        sorteos = Sorteo.objects.filter(tipo_residente_propietario=True).order_by('-id_sorteo')
+    else:
+        sorteos = Sorteo.objects.filter(tipo_residente_propietario=False).order_by('-id_sorteo')
+
+    hoy = date.today()
+
+    sorteos_info = []
+    for sorteo in sorteos:
+        participo = GanadorSorteo.objects.filter(
+            id_sorteo=sorteo,
+            id_detalle_residente__cod_usuario=usuario
+        ).exists()
+
+        gano = participo
+
+        # Lógica corregida
+        if participo or gano:
+            participa = True
+        elif sorteo.fecha_inicio > hoy and not tiene_docs:
+            participa = False
+        elif sorteo.fecha_inicio > hoy and tiene_docs:
+            participa = True
+        else:
+            participa = False
+
+        sorteos_info.append({
+            "sorteo": sorteo,
+            "participa": participa,
+            "gano": gano
+        })
+
+    html = render_to_string("residente/sorteo/tabla_sorteos.html", {
+        "sorteos_info": sorteos_info,
+        "detalle_residente": detalle
+    })
+
+    async_to_sync(channel_layer.group_send)(
+        f"mis_sorteos_{usuario.id_usuario}",
+        {
+            "type": "sorteos_update",
+            "action": "refresh",
+            "html": html
+        }
+    )
+
+@receiver(post_save, sender=Sorteo)
+def sorteo_creado(sender, instance, created, **kwargs):
+    if created:
+        # Enviar actualización a TODOS los residentes
+        for usuario in Usuario.objects.filter(id_rol__nombre_rol="Residente"):
+            enviar_sorteos_a_residente(usuario)

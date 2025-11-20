@@ -8,4 +8,8 @@ websocket_urlpatterns = [
     r"ws/pago-residente/(?P<usuario_id>\d+)/(?P<reserva_id>\d+)/$",
     PagoReservaResidenteConsumer.as_asgi()
 ),
+    re_path(
+    r"ws/mis-sorteos/(?P<usuario_id>\d+)/$",
+    SorteosResidenteConsumer.as_asgi()
+),
 ]

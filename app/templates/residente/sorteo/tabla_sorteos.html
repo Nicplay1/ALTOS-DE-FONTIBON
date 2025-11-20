@@ -1,0 +1,91 @@
+<!-- Contenedor para scroll horizontal -->
+<div class="table-container">
+    <!-- TABLA para desktop -->
+    <table class="table table-hover align-middle">
+        <thead class="table-header-gradient">
+            <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Participa</th>
+                <th>Detalle</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in sorteos_info %}
+            <tr>
+                <td>{{ item.sorteo.id_sorteo }}</td>
+                <td>{{ item.sorteo.fecha_inicio }}</td>
+                <td>
+                    {% if item.participa %}
+                        <span class="estado-aprobada">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Sí
+                        </span>
+                    {% else %}
+                        <span class="estado-rechazada">
+                            <i class="fas fa-times-circle me-2"></i>
+                            No
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'detalle_sorteo' item.sorteo.id_sorteo %}" class="btn btn-detalle btn-sm">
+                        <i class="fas fa-eye me-1"></i>
+                        Ver Detalle
+                    </a>
+                </td>
+            </tr>
+
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-ticket-alt fa-4x mb-3" style="color: #94a3b8;"></i>
+                        <h4 class="text-muted">No hay sorteos disponibles</h4>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- CARDS para mobile -->
+<div class="d-md-none">
+    {% for item in sorteos_info %}
+    <div class="card card-sorteo mb-3 shadow-sm p-2">
+        <div class="card-body">
+            <p class="mb-1"><strong>ID:</strong> {{ item.sorteo.id_sorteo }}</p>
+            <p class="mb-1"><strong>Fecha:</strong> {{ item.sorteo.fecha_inicio }}</p>
+            <p class="mb-1">
+                <strong>Participa:</strong>
+                {% if item.participa %}
+                    <span class="estado-aprobada">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Sí
+                    </span>
+                {% else %}
+                    <span class="estado-rechazada">
+                        <i class="fas fa-times-circle me-2"></i>
+                        No
+                    </span>
+                {% endif %}
+            </p>
+
+            <div class="d-flex gap-2 mt-3">
+                <a href="{% url 'detalle_sorteo' item.sorteo.id_sorteo %}" 
+                   class="btn btn-detalle btn-sm flex-fill">
+                    <i class="fas fa-eye me-1"></i>
+                    Ver Detalle
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state text-center py-5">
+        <i class="fas fa-ticket-alt fa-4x mb-3" style="color: #94a3b8;"></i>
+        <h4 class="text-muted">No hay sorteos disponibles</h4>
+    </div>
+    {% endfor %}
+</div>

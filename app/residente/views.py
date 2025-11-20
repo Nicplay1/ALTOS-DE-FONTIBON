@@ -351,6 +351,10 @@ def lista_sorteos(request):
         messages.error(request, "No tienes un detalle de residente registrado.")
         return redirect('detalle_residente')
 
+    # Obtener documentos del vehículo
+    vehiculo = VehiculoResidente.objects.filter(cod_usuario=usuario_logueado).first()
+    tiene_docs = vehiculo.documentos if vehiculo else False
+
     # Filtrar sorteos según tipo de residente
     if detalle_residente.propietario:
         sorteos = Sorteo.objects.filter(tipo_residente_propietario=True).order_by('-id_sorteo')
@@ -361,27 +365,19 @@ def lista_sorteos(request):
     hoy = date.today()
 
     for sorteo in sorteos:
-        # ¿Participó o ganó en este sorteo?
         participo = GanadorSorteo.objects.filter(
             id_sorteo=sorteo,
             id_detalle_residente__cod_usuario=usuario_logueado
         ).exists()
 
-        gano = participo  # Asumimos que si está en GanadorSorteo, participó y ganó
+        gano = participo
 
-        # Validar documentos (si tienes esa lógica)
-        tiene_documentos_validos = detalle_residente.documentos_validos if hasattr(detalle_residente, 'documentos_validos') else False
-
-        # 🔹 Prioridad 1: si participó o ganó, siempre mostrar “Sí participa”
         if participo or gano:
             participa = True
-        # 🔹 Prioridad 2: si el sorteo es futuro y no tiene documentos válidos → No participa
-        elif sorteo.fecha_inicio > hoy and not tiene_documentos_validos:
+        elif sorteo.fecha_inicio > hoy and not tiene_docs:
             participa = False
-        # 🔹 Prioridad 3: si el sorteo es futuro y tiene documentos válidos → Podría participar
-        elif sorteo.fecha_inicio > hoy and tiene_documentos_validos:
+        elif sorteo.fecha_inicio > hoy and tiene_docs:
             participa = True
-        # 🔹 Prioridad 4: si el sorteo ya pasó pero no participó → No participa
         else:
             participa = False
 
@@ -396,6 +392,7 @@ def lista_sorteos(request):
         "detalle_residente": detalle_residente
     }
     return render(request, "residente/sorteo/lista_sorteos.html", context)
+
 
 # DETALLE DE SORTEO PARA RESIDENTE
 @rol_requerido([2])
