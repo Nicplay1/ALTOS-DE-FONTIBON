@@ -49,10 +49,10 @@ def register_view(request):
 
             # VALIDACIÓN: nombre/apellido
             if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$', nombres):
-                errors["nombres"] = "El nombre no debe tener números ni caracteres especiales."
+                errors["nombres"] = "El Nombres solo debe tener letras."
 
             if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$', apellidos):
-                errors["apellidos"] = "El apellido no debe tener números ni caracteres especiales."
+                errors["apellidos"] = "El Apellidos solo debe tener letras."
             
             if not re.fullmatch(r"\d+", numero_documento):
                  errors["numero_documento"] = "El número de documento solo puede contener números."
