@@ -194,4 +194,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://prueba-final-6586.onrender.com").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS", 
+    "https://prueba-final-6586.onrender.com,http://127.0.0.1:8000,http://localhost:8000"
+).split(",")
