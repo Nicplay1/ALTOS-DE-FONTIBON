@@ -278,18 +278,26 @@ def registrar_parqueadero(request):
         if detalle.tipo_propietario == "Residente":
             detalle.valor_pago = 0
             detalle.tiempo_total = None
+            detalle.tiempo_total_str = None
         elif detalle.hora_llegada and detalle.hora_salida:
             llegada_dt = datetime.combine(detalle.registro, detalle.hora_llegada)
             salida_dt = datetime.combine(detalle.registro, detalle.hora_salida)
             if salida_dt < llegada_dt:
                 salida_dt += timedelta(days=1)
             duracion = salida_dt - llegada_dt
-            total_seconds = int(duracion.total_seconds())
-            detalle.tiempo_total_str = str(duracion)
-            detalle.valor_pago = round(max(total_seconds / 3600, 1) * 2000, 2)
+
+            # ✅ Formatear sin milisegundos
+            total_segundos = int(duracion.total_seconds())
+            horas = total_segundos // 3600
+            minutos = (total_segundos % 3600) // 60
+            segundos = total_segundos % 60
+            detalle.tiempo_total_str = f"{horas}:{minutos:02d}:{segundos:02d}"
+
+            detalle.valor_pago = round(max(total_segundos / 3600, 1) * 2000, 2)
         else:
             detalle.tiempo_total = None
             detalle.valor_pago = None
+            detalle.tiempo_total_str = None
 
     return render(request, "vigilante/parqueadero/vigilante.html", {
         "registros": registros,
@@ -553,10 +561,13 @@ def entregar_paquete(request):
                 paquete.foto_cedula = foto_cedula  
 
             paquete.save()
-
             messages.success(request, "Entrega registrada correctamente.")
         else:
-            messages.error(request, "Revise los datos del formulario de entrega.")
+            # Revisamos específicamente el error de 'nombre_residente'
+            if 'nombre_residente' in form.errors:
+                messages.error(request, "No se puede poner números ni símbolos en 'Recibido Por'.")
+            else:
+                messages.error(request, "Revise los datos del formulario de entrega.")
     return redirect(reverse('correspondencia'))
 
 

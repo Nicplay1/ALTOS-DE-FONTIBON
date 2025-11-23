@@ -26,7 +26,6 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
-    /* SCROLL HORIZONTAL AL FINAL DE LA PÁGINA */
     overflow-x: auto;
 }
 
@@ -399,34 +398,33 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Estilos para la tabla con scroll horizontal - TABLA NO MÁS GRANDE QUE EL HEADER */
+/* Estilos para la tabla con scroll horizontal */
 .table-container {
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    overflow-x: auto; /* Scroll horizontal solo si es necesario */
+    overflow-x: auto;
     background-color: white;
     margin-bottom: 2rem;
-    max-width: 100%; /* No será más grande que el header principal */
+    max-width: 100%;
 }
 
-/* Encabezado de tabla con degradado verde y texto blanco - ESQUINAS REDONDEADAS */
+/* Encabezado de tabla con degradado verde y texto blanco */
 .table-header-gradient {
     background: black;
     color: white;
-    border-radius: 16px 16px 0 0; /* ESQUINAS REDONDEADAS */
-    overflow: hidden; /* Para que los bordes redondeados se apliquen correctamente */
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
 }
 
 .table-header-gradient th {
-    background-color: transparent; /* Eliminamos el fondo negro */
+    background-color: transparent;
     color: white;
     font-weight: 600;
     padding: 16px 20px;
     font-size: 1.05rem;
-    border: none; /* Eliminamos bordes para que se vea como un header continuo */
+    border: none;
 }
 
-/* Redondeamos las esquinas del primer y último th */
 .table-header-gradient th:first-child {
     border-top-left-radius: 16px;
 }
@@ -645,7 +643,6 @@ body {
     background: linear-gradient(135deg, #198754 0%, #146c43 100%); 
 }
 
-/* Efecto brillante al pasar el cursor por el badge */
 .status-badge:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.2), 0 0 8px rgba(255,255,255,0.5);
@@ -717,17 +714,15 @@ body {
 
 @media (max-width: 768px) {
     table {
-        display: none; /* Ocultamos tabla en móvil */
+        display: none;
     }
     
-    /* MOSTRAR SOLO LAS CARDS EN MOBILE */
     .cards-container-mobile {
         display: block !important;
     }
 }
 
 @media (min-width: 769px) {
-    /* OCULTAR CARDS EN DESKTOP */
     .cards-container-mobile {
         display: none !important;
     }
@@ -760,7 +755,7 @@ body {
     outline: none;
 }
 
-/* MODALES PERSONALIZADOS PARA FORMULARIOS - CORREGIDOS PARA BOTONES VISIBLES */
+/* MODALES PERSONALIZADOS PARA FORMULARIOS */
 .modal-form-backdrop {
     position: fixed;
     top: 0;
@@ -928,47 +923,81 @@ body {
 
     .modal-form-container {
         width: 95%;
-        max-height: 80vh;
+        max-width: 95vw;
+        max-height: 90vh;
+        top: 50%;
+        display: flex;
+        flex-direction: column;
     }
     
     .modal-form-body {
-        max-height: calc(80vh - 180px);
+        max-height: calc(90vh - 220px);
+        padding: 1rem;
+        overflow-y: auto;
+        flex: 1 1 auto;
     }
     
     .modal-form-footer {
         flex-direction: column;
         gap: 0.75rem;
-        min-height: 110px;
-    }
-    
-    /* Específico para el formulario de visitante en móviles */
-    #modal-visitante .modal-form-container {
-        max-height: 90vh;
-        top: 5vh;
-    }
-    
-    #modal-visitante .modal-form-body {
-        max-height: calc(90vh - 150px);
-        padding-bottom: 0;
-    }
-    
-    #modal-visitante .modal-form-footer {
-        position: sticky;
-        bottom: 0;
-        background: white;
-        padding: 1rem 1.5rem;
         min-height: auto;
+        padding: 1rem;
+        flex-shrink: 0;
+        display: flex !important;
+        background: white;
         border-top: 2px solid var(--border);
     }
     
-    /* Reducir margenes en formularios para móvil */
+    /* CORRECCIÓN ESPECÍFICA PARA EL MODAL DE VISITANTE EN MÓVILES */
+    #modal-visitante .modal-form-container {
+        max-height: 90vh;
+        height: auto;
+        overflow: hidden;
+    }
+    
+    #modal-visitante .modal-form-body {
+        max-height: calc(90vh - 220px);
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    #modal-visitante .modal-form-footer {
+        position: relative;
+        background: white;
+        padding: 1rem;
+        border-top: 2px solid var(--border);
+        flex-shrink: 0;
+        display: flex !important;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    
     #modal-visitante .form-group {
         margin-bottom: 1rem;
+    }
+
+    #modal-visitante .form-group label {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    #modal-visitante .form-group input,
+    #modal-visitante .form-group select {
+        width: 100%;
+        display: block;
     }
     
     #modal-visitante .form-control {
         padding: 10px 14px;
         font-size: 16px;
+    }
+
+    /* Asegurar que los botones se vean bien en móviles */
+    #modal-visitante .modal-form-footer button {
+        width: 100%;
+        justify-content: center;
     }
 }
 

@@ -201,6 +201,11 @@ class EntregaPaqueteForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control-modern'}),
         label="Vigilante que Entrega"
     )
+    def clean_nombre_residente(self):
+        nombre = self.cleaned_data.get("nombre_residente")
+        if not nombre.replace(" ", "").isalpha():
+            raise forms.ValidationError("El nombre solo puede contener letras y espacios.")
+        return nombre
 
 
 TIPO_CHOICES = (
