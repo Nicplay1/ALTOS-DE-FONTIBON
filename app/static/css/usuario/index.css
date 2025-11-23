@@ -379,102 +379,112 @@
     }
 }
 
-/* Sección Servicios */
-.servicios-section {
-    padding: 100px 0;
-    background-color: #f8f9fa;
-}
+/* Estilos personalizados para la sección de servicios */
+        .servicios-section {
+            padding: 100px 0;
+            background-color: #f8f9fa;
+        }
 
-.servicios-title {
-    color: #1a4721;
-    text-align: center;
-    margin-bottom: 60px;
-    font-weight: 700;
-}
+        .servicios-title {
+            color: #1a4721;
+            text-align: center;
+            margin-bottom: 60px;
+            font-weight: 700;
+        }
 
-.servicio-card {
-    background-color: white;
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.4s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    border: 3px solid transparent;
-    background-clip: padding-box;
-    position: relative;
-    height: 100%;
-}
+        .servicio-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
-.servicio-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 15px;
-    padding: 3px;
-    background: linear-gradient(135deg, #D4AF37 0%, #1a4721 50%, #2d7a3a 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-}
+        .servicio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 15px;
+            padding: 3px;
+            background: linear-gradient(135deg, #D4AF37 0%, #1a4721 50%, #2d7a3a 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
 
-.servicio-card:hover {
-    transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
+        .servicio-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
 
-.servicio-img {
-    height: 200px;
-    width: 100%;
-    object-fit: cover;
-}
+        .servicio-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
 
-.servicio-body {
-    padding: 25px;
-    text-align: center;
-}
+        .servicio-body {
+            padding: 25px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-.servicio-title {
-    color: #1a4721;
-    font-weight: 700;
-    margin-bottom: 15px;
-    font-size: 1.4rem;
-}
+        .servicio-title {
+            color: #1a4721;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
 
-.servicio-desc {
-    color: #555;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    font-size: 1rem;
-}
+        .servicio-desc {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
 
-.btn-servicio {
-    background-color: #2d7a3a;
-    border: none;
-    color: white;
-    border-radius: 25px;
-    padding: 10px 25px;
-    font-weight: 600;
-    transition: all 0.3s;
-    text-decoration: none;
-    display: inline-block;
-}
+        .btn-servicio {
+            background-color: #2d7a3a;
+            border: none;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.btn-servicio:hover {
-    color: #ffffff;
-    background-color: #1a4721;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
+        .btn-servicio:hover {
+            color: #ffffff;
+            background-color: #1a4721;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
 
-/* Responsive para la sección Servicios */
-@media (max-width: 991.98px) {
-    .servicio-card {
-        margin-bottom: 30px;
-    }
-}
+        /* Responsive para la sección Servicios */
+        @media (max-width: 991.98px) {
+            .servicio-card {
+                margin-bottom: 30px;
+            }
+        }
 
 /* Sección Reseñas - MEJORADA PARA MÓVILES */
 .reseñas-section {

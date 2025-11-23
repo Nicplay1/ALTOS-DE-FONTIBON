@@ -39,8 +39,10 @@ function showAlert(message, type) {
 
 // Función para limpiar errores
 function clearErrors() {
-    document.getElementById('documento-error').innerHTML = '';
-    document.getElementById('password-error').innerHTML = '';
+    const errorElements = document.querySelectorAll('.error-message');
+    errorElements.forEach(element => {
+        element.innerHTML = '';
+    });
 }
 
 // Función para mostrar errores de campo
@@ -63,7 +65,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     
     // Enviar solicitud AJAX
     fetch(loginUrl, {
-
         method: 'POST',
         body: formData,
         headers: {

@@ -399,35 +399,46 @@ body {
     margin-bottom: 1rem;
 }
 
-/* Estilos para la tabla con scroll horizontal - TABLA MÁS GRANDE */
+/* Estilos para la tabla con scroll horizontal - TABLA NO MÁS GRANDE QUE EL HEADER */
 .table-container {
-    border-radius: 16px; /* Bordes redondeados en la parte superior */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra */
-    /* QUITAMOS EL SCROLL HORIZONTAL DE LA TABLA */
-    overflow-x: visible;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow-x: auto; /* Scroll horizontal solo si es necesario */
     background-color: white;
     margin-bottom: 2rem;
-    width: 100%; /* Ocupa todo el ancho disponible */
+    max-width: 100%; /* No será más grande que el header principal */
 }
 
-/* Encabezado de tabla con degradado verde y texto blanco */
+/* Encabezado de tabla con degradado verde y texto blanco - ESQUINAS REDONDEADAS */
 .table-header-gradient {
-    background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent-green) 100%);
+    background: black;
     color: white;
+    border-radius: 16px 16px 0 0; /* ESQUINAS REDONDEADAS */
+    overflow: hidden; /* Para que los bordes redondeados se apliquen correctamente */
 }
 
 .table-header-gradient th {
-    background-color: black;
+    background-color: transparent; /* Eliminamos el fondo negro */
     color: white;
     font-weight: 600;
-    padding: 16px 20px; /* Más padding para hacer la tabla más grande */
-    font-size: 1.05rem; /* Texto más grande */
+    padding: 16px 20px;
+    font-size: 1.05rem;
+    border: none; /* Eliminamos bordes para que se vea como un header continuo */
 }
 
-/* Celdas de tabla más grandes */
+/* Redondeamos las esquinas del primer y último th */
+.table-header-gradient th:first-child {
+    border-top-left-radius: 16px;
+}
+
+.table-header-gradient th:last-child {
+    border-top-right-radius: 16px;
+}
+
+/* Celdas de tabla */
 .table-hover td {
-    padding: 14px 20px; /* Más padding para hacer las celdas más grandes */
-    font-size: 1rem; /* Texto más grande */
+    padding: 14px 20px;
+    font-size: 1rem;
     vertical-align: middle;
 }
 
@@ -613,12 +624,12 @@ body {
 /* Badges para estado */
 .status-badge {
     padding: 6px 14px; 
-    border-radius: 20px; /* Más redondeado */
+    border-radius: 20px;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
     display: inline-block;
-    min-width: 120px; /* Mismo tamaño para todos */
+    min-width: 120px;
     text-align: center;
     white-space: nowrap;
     color: white;
@@ -641,7 +652,7 @@ body {
     filter: brightness(1.1);
 }
 
-/* CARDS DISEÑO MODERNO - IGUAL AL CÓDIGO 1 */
+/* CARDS DISEÑO MODERNO */
 .card-parqueadero {
     background: white;
     border-radius: 16px;
@@ -775,12 +786,12 @@ body {
     border-radius: 16px;
     box-shadow: var(--shadow-lg);
     z-index: 1050;
-    width: 450px; /* Más angosto */
-    max-height: 75vh; /* REDUCIDO para dar más espacio a los botones */
+    width: 450px;
+    max-height: 75vh;
     display: none;
-    flex-direction: column; /* Para estructura de header, body y footer */
-    overflow: hidden; /* Eliminamos scroll general */
-    animation: modalAppear 0.3s ease-out; /* Animación suave al abrir */
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalAppear 0.3s ease-out;
 }
 
 @keyframes modalAppear {
@@ -806,7 +817,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0; /* Evita que el header se reduzca */
+    flex-shrink: 0;
 }
 
 .modal-form-title {
@@ -820,9 +831,9 @@ body {
 
 .modal-form-body {
     padding: 1.5rem;
-    overflow-y: auto; /* SOLO EL BODY TIENE SCROLL */
-    flex-grow: 1; /* Ocupa el espacio disponible */
-    max-height: calc(75vh - 180px); /* AJUSTADO para dar más espacio al footer */
+    overflow-y: auto;
+    flex-grow: 1;
+    max-height: calc(75vh - 180px);
 }
 
 .modal-form-footer {
@@ -831,17 +842,16 @@ body {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    flex-shrink: 0; /* Evita que el footer se reduzca */
-    /* MÁS ESPACIO PARA LOS BOTONES */
+    flex-shrink: 0;
     margin-top: auto;
-    min-height: 90px; /* ALTURA MÍNIMA GARANTIZADA para los botones */
+    min-height: 90px;
 }
 
 /* X BLANCA CON HOVER CIRCULAR TRANSPARENTE */
 .close-btn {
     background: none;
     border: none;
-    color: white; /* X BLANCA */
+    color: white;
     font-size: 1.25rem;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -854,7 +864,7 @@ body {
 }
 
 .close-btn:hover {
-    background: rgba(255, 255, 255, 0.2); /* Fondo circular transparente al hover */
+    background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
@@ -918,7 +928,7 @@ body {
 
     .modal-form-container {
         width: 95%;
-        max-height: 80vh; /* Ajustado para móvil */
+        max-height: 80vh;
     }
     
     .modal-form-body {
@@ -928,7 +938,37 @@ body {
     .modal-form-footer {
         flex-direction: column;
         gap: 0.75rem;
-        min-height: 110px; /* Más altura en móvil para botones apilados */
+        min-height: 110px;
+    }
+    
+    /* Específico para el formulario de visitante en móviles */
+    #modal-visitante .modal-form-container {
+        max-height: 90vh;
+        top: 5vh;
+    }
+    
+    #modal-visitante .modal-form-body {
+        max-height: calc(90vh - 150px);
+        padding-bottom: 0;
+    }
+    
+    #modal-visitante .modal-form-footer {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 1rem 1.5rem;
+        min-height: auto;
+        border-top: 2px solid var(--border);
+    }
+    
+    /* Reducir margenes en formularios para móvil */
+    #modal-visitante .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    #modal-visitante .form-control {
+        padding: 10px 14px;
+        font-size: 16px;
     }
 }
 

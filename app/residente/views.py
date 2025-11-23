@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.timezone import now
 import os
+from django.views.decorators.csrf import csrf_exempt
 
 
 #PANEL GENERAL RESIDENTE
@@ -245,9 +246,9 @@ def eliminar_reserva(request, id_reserva):
 
 
 # LISTAR ZONAS COMUNES - AGREGAR PAGO A RESERVA
-
-
+@rol_requerido([2])
 @login_requerido
+@csrf_exempt
 def agregar_pago(request, id_reserva):
     reserva = get_object_or_404(Reserva, pk=id_reserva, cod_usuario=request.usuario)
     pago, created = PagosReserva.objects.get_or_create(id_reserva=reserva)

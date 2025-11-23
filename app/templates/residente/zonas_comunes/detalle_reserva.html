@@ -49,9 +49,11 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-img">
-                    <img src="{% static 'img/LOGO.png' %}" alt="Logo">
-                </div>
+                <a href="{% url 'index' %}">
+                        <div class="logo-img">
+                            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
+                        </div>
+                    </a>
                 <div class="logo-text">Panel Residente</div>
             </div>
         </div>
@@ -110,19 +112,21 @@
 
         <div class="content-body">
             <div class="container mt-3">
-                <!-- ALERTA OPCIONAL -->
-                {% if mostrar_alerta %}
-                <div class="alert alert-warning">
-                    Debes estar al día con los pagos para reservar zonas comunes.
-                </div>
-                {% endif %}
-
                 <!-- CONTENEDOR DE LA TABLA (esto se actualizará dinámicamente) -->
                 <div id="tabla-mis-reservas">
                     {% include "residente/zonas_comunes/tabla_mis_reservas.html" %}
                 </div>
             </div>
         </div>
+
+        <div id="overlay-borroso"></div>
+
+        <!-- Alerta de pago -->
+        <div id="alerta-pago" class="alerta-pago">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Debes estar al día con los pagos para reservar zonas comunes.</span>
+        </div>
+
     </main>
 
     <!-- Bootstrap JS -->
@@ -161,6 +165,23 @@
                 setTimeout(() => location.reload(), 5000);
             };
         })();
+       
+        document.addEventListener("DOMContentLoaded", function () {
+            const mostrarAlerta = {{ mostrar_alerta|yesno:"true,false" }};
+            if (mostrarAlerta) {
+                const alerta = document.getElementById("alerta-pago");
+                const overlay = document.getElementById("overlay-borroso");
+
+                alerta.classList.add("mostrar");
+                overlay.classList.add("mostrar");
+
+                setTimeout(() => {
+                    alerta.classList.remove("mostrar");
+                    overlay.classList.remove("mostrar");
+                }, 3000); // 3 segundos
+            }
+        });
+
     </script>
 </body>
 </html>

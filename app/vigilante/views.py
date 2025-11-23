@@ -58,17 +58,22 @@ def normalizar_placa(placa_raw):
 @rol_requerido([4])
 @login_requerido
 def registrar_parqueadero(request):
+    from random import choice
+    from django.utils import timezone
+    from datetime import datetime, timedelta
+
     query_raw = request.GET.get("placa", "")
     accion = request.GET.get("accion")
 
     query = None
     tipo_vehiculo_detectado = None
 
+    # Normalizar placa si hay función disponible
     if query_raw:
         try:
             query, tipo_vehiculo_detectado = normalizar_placa(query_raw)
-        except ValueError as e:
-            messages.error(request, str(e))
+        except Exception as e:
+            messages.error(request, f"Error al normalizar placa: {e}")
             query = None
 
     registros = DetallesParqueadero.objects.select_related(
@@ -80,7 +85,9 @@ def registrar_parqueadero(request):
     mostrar_modal_residente = False
     form = None
 
-    # --- POST: Registrar Visitante Nuevo ---
+    # ----------------------------------------------------
+    # POST: Registrar visitante
+    # ----------------------------------------------------
     if request.method == "POST" and "guardar_visitante" in request.POST:
         form = VisitanteForm(request.POST)
         if form.is_valid():
@@ -97,61 +104,104 @@ def registrar_parqueadero(request):
                         subject="Nuevo visitante registrado - Altos de Fontibón",
                         message=(
                             f"Estimado(a) {detalle.cod_usuario.nombres},\n\n"
-                            f"Se ha registrado un visitante para su apartamento {visitante.apartamento}, Torre {visitante.torre}.\n\n"
+                            f"Se ha registrado un visitante para su apartamento.\n\n"
                             f"Visitante: {visitante.nombres} {visitante.apellidos}\n"
                             f"Documento: {visitante.documento}\n"
                             f"Celular: {visitante.celular}\n"
                             f"Vehículo: {visitante.tipo_vehiculo} - {visitante.placa}\n\n"
-                            "Atentamente,\nAdministración: Altos de Fontibón"
+                            "Atentamente,\nAdministración"
                         ),
                         from_email="altosdefontibon.cr@gmail.com",
                         recipient_list=[detalle.cod_usuario.correo]
                     )
-                except Exception as e:
-                    print(f"Error enviando correo: {e}")
+                except Exception:
+                    pass
 
-            parqueaderos_disponibles = Parqueadero.objects.filter(estado=False)
-            if parqueaderos_disponibles.exists():
-                parqueadero_default = choice(parqueaderos_disponibles)
-                parqueadero_default.estado = True
-                parqueadero_default.save()
-            else:
+            parqueaderos_disp = Parqueadero.objects.filter(estado=False)
+            if not parqueaderos_disp.exists():
                 messages.error(request, "No hay parqueadero disponible.")
                 return redirect('registrar_detalle_parqueadero')
+
+            parqueadero_default = choice(parqueaderos_disp)
+            parqueadero_default.estado = True
+            parqueadero_default.save()
 
             DetallesParqueadero.objects.create(
                 tipo_propietario="Visitante",
                 id_visitante=visitante,
-                id_vehiculo_residente=None,
                 id_parqueadero=parqueadero_default,
                 hora_llegada=timezone.localtime().time()
             )
-            messages.success(request, f"Visitante y detalle creados con placa {visitante.placa}")
+
+            messages.success(request, f"Visitante creado con placa {visitante.placa}")
             return redirect('registrar_detalle_parqueadero')
 
-    # --- GET: Buscar Placa y Registrar Movimiento ---
+        mostrar_formulario = True
+
+    # ----------------------------------------------------
+    # GET: Lógica principal
+    # ----------------------------------------------------
     if query:
-        vehiculo = VehiculoResidente.objects.filter(placa=query).first()
-        visitante = Visitante.objects.filter(placa=query).first()
-        hora_actual = timezone.localtime().time()
+        try:
+            vehiculo = VehiculoResidente.objects.filter(placa=query).first()
+            visitante = Visitante.objects.filter(placa=query).first()
+            hora_actual = timezone.localtime().time()
 
-        if vehiculo:
-            # 🔹 Solo ganadores del último sorteo
-            ultimo_sorteo = Sorteo.objects.order_by('-fecha_inicio').first()
-            ganador = GanadorSorteo.objects.filter(
-                id_sorteo=ultimo_sorteo,
-                id_detalle_residente__cod_usuario__vehiculoresidente__placa=vehiculo.placa
-            ).select_related("id_parqueadero").first()
+            # -----------------------------------------------
+            # RESIDENTE (verifica sorteo y entrada/salida)
+            # -----------------------------------------------
+            if vehiculo:
 
-            if not ganador:
-                messages.error(request, f"El vehículo con placa {query} no es ganador del último sorteo.")
-            else:
+                # Obtener el último sorteo REAL
+                ultimo_sorteo = Sorteo.objects.order_by('-id_sorteo').first()
+                if not ultimo_sorteo:
+                    messages.error(request, "No hay sorteos registrados.")
+                    return redirect('registrar_detalle_parqueadero')
+
+                if not vehiculo.cod_usuario:
+                    messages.error(request, f"El vehículo {query} no tiene usuario asociado.")
+                    return redirect('registrar_detalle_parqueadero')
+
+                detalle_residente = DetalleResidente.objects.filter(
+                    cod_usuario=vehiculo.cod_usuario
+                ).first()
+
+                if not detalle_residente:
+                    messages.error(request, f"No se encontró DetalleResidente para este vehículo.")
+                    return redirect('registrar_detalle_parqueadero')
+
+                ganador = GanadorSorteo.objects.filter(
+                    id_sorteo=ultimo_sorteo,
+                    id_detalle_residente=detalle_residente
+                ).select_related("id_parqueadero").first()
+
+                if not ganador:
+                    messages.error(request, "Este vehículo NO es ganador del último sorteo.")
+                    return redirect('registrar_detalle_parqueadero')
+
                 parqueadero_ganador = ganador.id_parqueadero
                 placa_encontrada = vehiculo.placa
 
+                # Buscar si tiene una entrada activa
+                entrada_activa = DetallesParqueadero.objects.filter(
+                    id_vehiculo_residente=vehiculo,
+                    hora_salida__isnull=True
+                ).first()
+
+                # ----------------------------------------------------
+                # MOSTRAR MODAL ANTES DE ENTRADA O SALIDA
+                # ----------------------------------------------------
                 if not accion:
                     mostrar_modal_residente = True
+
+                # ----------------------------------------------------
+                # ENTRADA
+                # ----------------------------------------------------
                 elif accion == "entrada":
+                    if entrada_activa:
+                        messages.error(request, "Este vehículo ya tiene una entrada activa.")
+                        return redirect('registrar_detalle_parqueadero')
+
                     if not parqueadero_ganador.estado:
                         parqueadero_ganador.estado = True
                         parqueadero_ganador.save()
@@ -159,51 +209,71 @@ def registrar_parqueadero(request):
                     DetallesParqueadero.objects.create(
                         tipo_propietario="Residente",
                         id_vehiculo_residente=vehiculo,
-                        id_visitante=None,
                         id_parqueadero=parqueadero_ganador,
                         hora_llegada=hora_actual
                     )
-                    messages.success(request, f"Entrada registrada para residente {placa_encontrada}")
+
+                    messages.success(request, "Entrada registrada correctamente.")
                     return redirect('registrar_detalle_parqueadero')
+
+                # ----------------------------------------------------
+                # SALIDA
+                # ----------------------------------------------------
                 elif accion == "salida":
-                    DetallesParqueadero.objects.create(
-                        tipo_propietario="Residente",
-                        id_vehiculo_residente=vehiculo,
-                        id_visitante=None,
-                        id_parqueadero=parqueadero_ganador,
-                        hora_salida=hora_actual
-                    )
+                    if not entrada_activa:
+                        messages.error(request, "Este vehículo NO tiene una entrada registrada.")
+                        return redirect('registrar_detalle_parqueadero')
+
+                    entrada_activa.hora_salida = hora_actual
+                    entrada_activa.save()
+
                     parqueadero_ganador.estado = False
                     parqueadero_ganador.save()
-                    messages.success(request, f"Salida registrada para residente {placa_encontrada}")
+
+                    messages.success(request, "Salida registrada correctamente.")
                     return redirect('registrar_detalle_parqueadero')
 
-        elif visitante:
-            parqueaderos_disponibles = Parqueadero.objects.filter(estado=False)
-            if parqueaderos_disponibles.exists():
-                parqueadero_default = choice(parqueaderos_disponibles)
-                parqueadero_default.estado = True
-                parqueadero_default.save()
+            # -----------------------------------------------
+            # VISITANTE EXISTENTE
+            # -----------------------------------------------
+            elif visitante:
+                parqueaderos_disp = Parqueadero.objects.filter(estado=False)
+                if parqueaderos_disp.exists():
+                    parqueadero_default = choice(parqueaderos_disp)
+                    parqueadero_default.estado = True
+                    parqueadero_default.save()
 
-                DetallesParqueadero.objects.create(
-                    tipo_propietario="Visitante",
-                    id_visitante=visitante,
-                    id_vehiculo_residente=None,
-                    id_parqueadero=parqueadero_default,
-                    hora_llegada=hora_actual
-                )
-                messages.success(request, f"Detalle creado para visitante {visitante.placa}")
-                return redirect('registrar_detalle_parqueadero')
+                    DetallesParqueadero.objects.create(
+                        tipo_propietario="Visitante",
+                        id_visitante=visitante,
+                        id_parqueadero=parqueadero_default,
+                        hora_llegada=hora_actual
+                    )
+
+                    messages.success(request, f"Detalle creado para visitante {visitante.placa}")
+                    return redirect('registrar_detalle_parqueadero')
+                else:
+                    messages.error(request, "No hay parqueaderos disponibles para visitantes.")
+
+            # -----------------------------------------------
+            # VISITANTE NUEVO
+            # -----------------------------------------------
             else:
-                messages.error(request, "No hay parqueadero disponible para visitantes.")
-        else:
-            mostrar_formulario = True
-            form = VisitanteForm(initial={
-                "placa": query,
-                "tipo_vehiculo": tipo_vehiculo_detectado
-            })
+                mostrar_formulario = True
+                if form is None:
+                    form = VisitanteForm(initial={
+                        "placa": query,
+                        "tipo_vehiculo": tipo_vehiculo_detectado
+                    })
 
-    # --- Calcular tiempos y valores ---
+        except Exception as e:
+            messages.error(request, f"Error inesperado: {e}")
+            print("Error registrar_parqueadero:", e)
+            return redirect('registrar_detalle_parqueadero')
+
+    # ----------------------------------------------------
+    # Cálculo tiempos/pagos
+    # ----------------------------------------------------
     for detalle in registros:
         if detalle.tipo_propietario == "Residente":
             detalle.valor_pago = 0
@@ -211,16 +281,11 @@ def registrar_parqueadero(request):
         elif detalle.hora_llegada and detalle.hora_salida:
             llegada_dt = datetime.combine(detalle.registro, detalle.hora_llegada)
             salida_dt = datetime.combine(detalle.registro, detalle.hora_salida)
-
             if salida_dt < llegada_dt:
                 salida_dt += timedelta(days=1)
-
             duracion = salida_dt - llegada_dt
             total_seconds = int(duracion.total_seconds())
-            horas_int = total_seconds // 3600
-            minutos_int = (total_seconds % 3600) // 60
-            segundos_int = total_seconds % 60
-            detalle.tiempo_total_str = f"{horas_int:02d}:{minutos_int:02d}:{segundos_int:02d}"
+            detalle.tiempo_total_str = str(duracion)
             detalle.valor_pago = round(max(total_seconds / 3600, 1) * 2000, 2)
         else:
             detalle.tiempo_total = None
@@ -231,7 +296,7 @@ def registrar_parqueadero(request):
         "placa_encontrada": placa_encontrada,
         "mostrar_formulario": mostrar_formulario,
         "mostrar_modal_residente": mostrar_modal_residente,
-        "form": form
+        "form": form,
     })
 
 
@@ -499,17 +564,15 @@ def entregar_paquete(request):
 @login_requerido
 def novedades_view(request):
     usuarios_rol4 = Usuario.objects.filter(id_rol=4)
-
-    # FILTRAR SOLO PAQUETES NO ENTREGADOS
     paquetes_no_entregados = Paquete.objects.filter(fecha_entrega__isnull=True)
-
-    # FILTRAR SOLO VISITANTES ACTIVOS (si aplica)
     visitantes = Visitante.objects.all()
 
     if request.method == "POST":
         form = NovedadesForm(request.POST, request.FILES)
 
-        if form.is_valid():
+        if not form.is_valid():
+            messages.error(request, "Todos los campos deben estar llenos.")
+        else:
             tipo_novedad = form.cleaned_data.get("tipo_novedad")
             descripcion = form.cleaned_data.get("descripcion", "")
             foto = form.cleaned_data.get("foto", None)
@@ -531,7 +594,6 @@ def novedades_view(request):
                 paquete = form.cleaned_data.get("id_paquete")
 
                 if paquete:
-                    # Obtener el detalle residente asociado a ese paquete
                     detalle_residente = DetalleResidente.objects.filter(
                         apartamento=paquete.apartamento,
                         torre=paquete.torre
@@ -555,7 +617,6 @@ def novedades_view(request):
                     novedad_data["id_visitante"] = visitante
                     novedad_data["id_detalle_residente"] = detalle_residente
 
-            # Guardar la novedad en la BD
             Novedades.objects.create(**novedad_data)
 
             messages.success(request, "Novedad registrada correctamente.")
@@ -570,7 +631,7 @@ def novedades_view(request):
         "form": form,
         "novedades": novedades,
         "usuarios_rol4": usuarios_rol4,
-        "paquetes": paquetes_no_entregados,  # SOLO NO ENTREGADOS
+        "paquetes": paquetes_no_entregados,
         "visitantes": visitantes,
     }
     return render(request, "vigilante/novedades/listar_novedades.html", context)

@@ -123,6 +123,12 @@ class ArchivoVehiculoForm(forms.ModelForm):
             'ruta_archivo': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacemos todos los campos obligatorios
+        for field in self.fields.values():
+            field.required = True
+
 
 # ---------------- PAGOS RESERVA ----------------
 

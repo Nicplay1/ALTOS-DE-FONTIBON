@@ -16,6 +16,7 @@
     
     <!-- CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/vigilante/correspondencia/correspondencia.css' %}">
+
 </head>
 <body>
 
@@ -49,9 +50,11 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-img">
-                    <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
-                </div>
+                <a href="{% url 'index' %}">
+                        <div class="logo-img">
+                            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
+                        </div>
+                    </a>
                 <div class="logo-text">Panel Vigilante</div>
             </div>
         </div>

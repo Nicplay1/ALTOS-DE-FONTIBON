@@ -156,6 +156,19 @@ h1 {
     margin-bottom: 5px; /* Espacio para el mensaje de error */
 }
 
+
+.password-container .form-input {
+    padding-right: 40px; /* Deja espacio para el icono del ojo */
+    text-overflow: ellipsis; /* Opcional: muestra "..." si la contraseña es muy larga */
+    overflow: hidden;       /* Evita que el texto se superponga al icono */
+}
+
+@media (max-width: 480px) {
+    .password-container .form-input {
+        padding-right: 40px;
+    }
+}
+
 .form-input {
     width: 100%;
     padding: 15px 15px 15px 45px;
@@ -376,10 +389,10 @@ h1 {
 }
 
 .alert-error {
-    background-color: #e74c3c;
-    color: white;
-    border-left: 5px solid #c0392b;
-}
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
 
 .alert-success {
     background-color: #2ecc71;
@@ -533,4 +546,18 @@ h1 {
     .error-message {
         font-size: 12px;
     }
+}
+
+.form-select {
+    text-align: start;          /* Centra el texto cuando está cerrado */
+    text-align-last: start;     /* Centra la opción seleccionada */
+}
+
+/* Centrar opciones dentro del menú desplegable */
+.form-select option {
+    text-align: start;
+}
+
+.select-icon {
+    pointer-events: none;
 }

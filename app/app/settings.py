@@ -92,7 +92,7 @@ import pymysql
 pymysql.install_as_MySQLdb()
 
 # Opción: cambiar 'default_db' a 'mysql' o 'postgres' según la base que quieras usar
-default_db = 'postgres'  # 'mysql' o 'postgres'
+default_db = 'mysql'  # 'mysql' o 'postgres'
 
 if default_db == 'mysql':
     DATABASES = {
@@ -157,29 +157,31 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # ---------------------------------------
 # 📧 CONFIGURACIÓN DE CORREO PRODUCCION
 # ---------------------------------------
-EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-SENDGRID_API_KEY = os.getenv("EMAIL_HOST_PASSWORD")
+#EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+#EMAIL_HOST = "smtp.sendgrid.net"
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#EMAIL_HOST_USER = "apikey"  # ⚠️ siempre "apikey"
+#EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_API_KEY")  # tu clave real
+#DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
 
 
 # ---------------------------------------
 # 📧 CONFIGURACIÓN DE CORREO DESARRROLLO
 # ---------------------------------------
 # Configuración de Gmail para envío de correos
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#EMAIL_HOST = 'smtp.gmail.com'
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = True
-#EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
-#EMAIL_HOST_PASSWORD = 'heho zywq sayt pexm'
-#DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
+EMAIL_HOST_PASSWORD = 'heho zywq sayt pexm'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Opciones de depuración (opcional)
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 SENDGRID_ECHO_TO_STDOUT = True
-
-# Correo por defecto
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
 
 
 # 🟢 En Render, solo mostrar el correo en consola (no enviarlo)

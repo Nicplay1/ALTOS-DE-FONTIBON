@@ -1,5 +1,3 @@
-/* registros.css */
-
 /* Variables de colores y sombras */
 :root {
   --primary-dark: #0f2027;
@@ -20,13 +18,13 @@
 /* Body y tipografía */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, var(--background) 0%, #f0f9f4 100%);
+  background: transparent;
   color: var(--text-primary);
   line-height: 1.6;
 }
 
 /* Contenedor de tabla con scroll horizontal */
-.table-container {
+.table-responsive {
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.1);
   overflow-x: auto;
@@ -108,4 +106,103 @@ body {
   font-size: 3rem;
   color: var(--border);
   margin-bottom: 1rem;
+}
+
+/* Cards para pantallas pequeñas */
+.card-correspondencia {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.card-correspondencia:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+  border-color: var(--accent-green);
+}
+
+.card-correspondencia-header {
+  background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent-green) 100%);
+  color: white;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-correspondencia-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.card-correspondencia-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.card-correspondencia-body {
+  padding: 1.5rem;
+}
+
+.card-correspondencia-field {
+  display: flex;
+  margin-bottom: 1rem;
+  align-items: flex-start;
+}
+
+.card-correspondencia-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 120px;
+  margin-right: 1rem;
+}
+
+.card-correspondencia-value {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.card-correspondencia-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Ajustes para el modal en móviles */
+@media (max-width: 576px) {
+  .contenedor-residente {
+    padding: 0 10px;
+  }
+  
+  .card-correspondencia {
+    margin-bottom: 1rem;
+  }
+  
+  .card-correspondencia-header {
+    padding: 1rem;
+  }
+  
+  .card-correspondencia-body {
+    padding: 1rem;
+  }
+  
+  .card-correspondencia-field {
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+  }
+  
+  .card-correspondencia-label {
+    min-width: auto;
+    margin-right: 0;
+    margin-bottom: 0.25rem;
+  }
 }

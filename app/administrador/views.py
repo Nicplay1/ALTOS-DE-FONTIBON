@@ -343,56 +343,6 @@ def sorteos_list_create(request):
     return render(request, 'administrador/sorteo/sorteos.html', context)
   
 
-
-
-@rol_requerido([3])
-@login_requerido
-def activar_validacion(request):
-    proceso, created = ProcesoValidacion.objects.get_or_create(id=1)
-    proceso.activo = True
-    proceso.save()
-
-    # 🔹 Actualizar SOLO vehículos que no han sido modificados manualmente
-    # Podemos asumir que si un vehículo tiene documentos=False pero tiene todos los docs,
-    # es porque el admin lo estableció manualmente y no queremos sobrescribirlo
-    documentos_requeridos = ['SOAT', 'Tarjeta de propiedad', 'Técnico-mecánica', 'Licencia', 'Identidad']
-    
-    # Obtener todos los vehículos
-    vehiculos = VehiculoResidente.objects.all()
-    vehiculos_actualizados = 0
-
-    for vehiculo in vehiculos:
-        documentos_subidos = ArchivoVehiculo.objects.filter(
-            idVehiculo=vehiculo,
-            idTipoArchivo__tipo_documento__in=documentos_requeridos
-        ).values_list('idTipoArchivo__tipo_documento', flat=True).distinct()
-        
-        tiene_todos = set(documentos_requeridos).issubset(set(documentos_subidos))
-        
-        # Solo actualizar si tiene todos los documentos Y actualmente está en False
-        # Esto respeta la decisión manual del administrador si estableció en False
-        if tiene_todos and not vehiculo.documentos:
-            vehiculo.documentos = True
-            vehiculo.save()
-            vehiculos_actualizados += 1
-
-    messages.success(request, f"Proceso de validación activado. {vehiculos_actualizados} vehículos actualizados automáticamente.")
-    return redirect('lista_vehiculos')
-
-
-
-
-@rol_requerido([3])
-@login_requerido
-def finalizar_validacion(request):
-    proceso, created = ProcesoValidacion.objects.get_or_create(id=1)
-    proceso.activo = False
-    proceso.save()
-    messages.success(request, "Proceso de validación finalizado.")
-    return redirect('lista_vehiculos')
-
-
-
 @rol_requerido([3])
 @login_requerido
 def sorteos_list_create(request):

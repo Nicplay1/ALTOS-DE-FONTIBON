@@ -167,6 +167,55 @@ body {
     font-size: 1.5rem;
 }
 
+
+.btn-validation {
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+    }
+
+    /* Verde oscuro */
+    .btn-activar {
+        background: #2d6a4f;
+        color: white;
+        box-shadow: 0 4px 10px rgba(45, 106, 79, 0.3);
+    }
+
+    .btn-activar:hover {
+        color: white;
+        background: #1b4332;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(27, 67, 50, 0.35);
+    }
+
+    /* Verde suave */
+    .btn-finalizar {
+        background: #52b788;
+        color: white;
+        box-shadow: 0 4px 10px rgba(82, 183, 136, 0.3);
+    }
+
+    .btn-finalizar:hover {
+        background: #40916c;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(64, 145, 108, 0.35);
+         color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 576px) {
+        .btn-validation {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
 .user-section {
     padding: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);

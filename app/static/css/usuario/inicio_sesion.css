@@ -24,10 +24,12 @@ body {
     to { opacity: 1; }
 }
 
-.login-container {
+.register-container {
     display: flex;
     width: 1000px;
-    height: 650px;
+    height: auto;
+    min-height: 650px;
+    max-height: 90vh;
     background-color: rgba(255, 255, 255, 0.95);
     border-radius: 15px;
     overflow: hidden;
@@ -63,11 +65,12 @@ body {
 
 .right-side {
     flex: 1;
-    padding: 50px;
+    padding: 40px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     animation: fadeInRight 1s ease-out 0.3s both;
+    overflow-y: auto;
 }
 
 @keyframes fadeInRight {
@@ -83,13 +86,13 @@ body {
 
 .logo-container {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
 .logo {
     width: 200px;
     height: auto;
-    margin: 0 auto 20px;
+    margin: 0 auto 15px;
     transition: transform 0.5s ease;
     display: flex;
     justify-content: center;
@@ -125,14 +128,32 @@ h1 {
 .instruction {
     color: #7f8c8d;
     font-size: 16px;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     text-align: center;
     line-height: 1.5;
 }
 
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
 .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-full {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-container {
     position: relative;
-    margin-bottom: 25px;
+    margin-bottom: 5px;
 }
 
 .form-input {
@@ -143,6 +164,27 @@ h1 {
     font-size: 16px;
     background-color: #f9f9f9;
     transition: all 0.3s ease;
+    height: 52px;
+}
+
+.form-select {
+    width: 100%;
+    padding: 15px 15px 15px 45px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 52px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #1a5632;
+    box-shadow: 0 0 0 2px rgba(26, 86, 50, 0.2);
 }
 
 .form-input:focus {
@@ -160,6 +202,18 @@ h1 {
     font-size: 16px;
     pointer-events: none;
     transition: all 0.3s ease;
+    background-color: transparent;
+    padding: 0 5px;
+}
+
+.form-select:focus + .form-label,
+.form-select:not([value=""]):valid + .form-label {
+    top: 0;
+    left: 40px;
+    font-size: 12px;
+    background-color: white;
+    padding: 0 5px;
+    color: #1a5632;
 }
 
 .form-input:focus + .form-label,
@@ -179,10 +233,34 @@ h1 {
     transform: translateY(-50%);
     color: #7f8c8d;
     font-size: 18px;
+    z-index: 2;
+    line-height: 1;
+}
+
+.select-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    font-size: 14px;
+    pointer-events: none;
+    line-height: 1;
 }
 
 .password-container {
     position: relative;
+}
+.password-container .form-input {
+    padding-right: 40px; /* Deja espacio para el icono del ojo */
+    text-overflow: ellipsis; /* Opcional: muestra "..." si la contraseña es muy larga */
+    overflow: hidden;       /* Evita que el texto se superponga al icono */
+}
+
+@media (max-width: 480px) {
+    .password-container .form-input {
+        padding-right: 40px;
+    }
 }
 
 .toggle-password {
@@ -194,13 +272,15 @@ h1 {
     color: #7f8c8d;
     font-size: 18px;
     transition: color 0.3s ease;
+    z-index: 2;
+    line-height: 1;
 }
 
 .toggle-password:hover {
     color: #1a5632;
 }
 
-.login-btn {
+.register-btn {
     width: 100%;
     padding: 15px;
     background-color: #FFD700;
@@ -215,10 +295,28 @@ h1 {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.login-btn:hover {
+.register-btn:hover {
     background-color: #e6c200;
     transform: scale(1.03);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.login-link {
+    text-align: center;
+    font-size: 14px;
+    color: #7f8c8d;
+}
+
+.login-link a {
+    color: #1a5632;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #D4AF37;
+    text-decoration: underline;
 }
 
 .forgot-password {
@@ -272,41 +370,23 @@ h1 {
     text-decoration: underline;
 }
 
-.register-link {
-    text-align: center;
-    font-size: 14px;
-    color: #7f8c8d;
-}
-
-.register-link a {
-    color: #1a5632;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.register-link a:hover {
-    color: #D4AF37;
-    text-decoration: underline;
-}
-
-/* Estilos para mensajes de error */
 .error-message {
     color: #e74c3c;
     font-size: 14px;
     margin-top: 5px;
     display: flex;
     align-items: center;
+    min-height: 20px;
+    transition: all 0.3s ease;
 }
 
 .error-message i {
     margin-right: 5px;
 }
 
-/* Estilos para alertas flash */
 .alert-container {
     position: fixed;
-    top: 20px;
+    top: 30px;
     right: 20px;
     z-index: 1000;
     max-width: 400px;
@@ -323,10 +403,10 @@ h1 {
 }
 
 .alert-error {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
-            color: #991b1b;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+    color: #991b1b;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
 
 .alert-success {
     background-color: #2ecc71;
@@ -369,21 +449,19 @@ h1 {
     }
 }
 
-/* Media Queries para Responsive Design */
 @media (max-width: 1024px) {
-    .login-container {
+    .register-container {
         width: 95%;
-        height: auto;
-        max-height: 90vh;
+        max-height: 95vh;
     }
     
     .right-side {
-        padding: 40px;
+        padding: 35px;
     }
 }
 
 @media (max-width: 768px) {
-    .login-container {
+    .register-container {
         flex-direction: column;
         width: 95%;
         height: auto;
@@ -399,7 +477,7 @@ h1 {
     }
     
     .logo {
-        width: 180px;
+        width: 140px;
     }
     
     h1 {
@@ -410,11 +488,20 @@ h1 {
         font-size: 22px;
     }
 
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
     .alert-container {
-        top: 10px;
+        top: 20px;
         right: 10px;
         left: 10px;
         max-width: none;
+    }
+    
+    .form-input, .form-select {
+        height: 50px;
     }
 }
 
@@ -423,7 +510,7 @@ h1 {
         padding: 10px;
     }
     
-    .login-container {
+    .register-container {
         width: 100%;
         border-radius: 10px;
     }
@@ -448,8 +535,9 @@ h1 {
         font-size: 14px;
     }
     
-    .form-input {
+    .form-input, .form-select {
         padding: 12px 12px 12px 40px;
+        height: 48px;
     }
     
     .input-icon {
@@ -462,7 +550,13 @@ h1 {
     }
     
     .form-input:focus + .form-label,
-    .form-input:not(:placeholder-shown) + .form-label {
+    .form-input:not(:placeholder-shown) + .form-label,
+    .form-select:focus + .form-label,
+    .form-select:not([value=""]):valid + .form-label {
         left: 35px;
+    }
+    
+    .error-message {
+        font-size: 12px;
     }
 }

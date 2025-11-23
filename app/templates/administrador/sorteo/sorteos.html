@@ -49,9 +49,11 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-img">
-                    <img src="{% static 'img/LOGO.png' %}" alt="Logo">
-                </div>
+                <a href="{% url 'index' %}">
+                        <div class="logo-img">
+                            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
+                        </div>
+                    </a>
                 <div class="logo-text">Panel Administrativo</div>
             </div>
         </div>
@@ -224,9 +226,9 @@
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-confirm">
-          <div class="modal-header">
+          <div class="modal-header-alerta">
             <i class="fas fa-exclamation-circle icon-alert"></i>
-            <h5 class="modal-title">Confirmar Liberación</h5>
+            <h5 class="modal-title-alerta">Confirmar Liberación</h5>
           </div>
           <div class="modal-body" id="confirmBody">
             ¿Estás seguro de que quieres liberar los parqueaderos?
@@ -249,9 +251,9 @@
     <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-success">
-          <div class="modal-header">
+          <div class="modal-header-alerta">
             <i class="fas fa-check-circle icon-success"></i>
-            <h5 class="modal-title">Liberación Realizada</h5>
+            <h5 class="modal-title-alerta">Liberación Realizada</h5>
           </div>
           <div class="modal-body" id="successBody">
             Los parqueaderos se han liberado correctamente.

@@ -49,9 +49,11 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-img">
-                    <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
-                </div>
+                <a href="{% url 'index' %}">
+                        <div class="logo-img">
+                            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
+                        </div>
+                    </a>
                 <div class="logo-text">Panel Vigilante</div>
             </div>
         </div>
@@ -175,25 +177,36 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <form method="post">
-            <div class="modal-form-body">
-                {% csrf_token %}
-                {% for field in form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                </div>
-                {% endfor %}
+       <form method="post">
+        <div class="modal-form-body">
+            {% csrf_token %}
+            <!-- Campos -->
+           {% for field in form %}
+            <div class="form-group mb-2">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+
+                {% if field.errors %}
+                    <div class="text-danger mt-1" style="font-size: 14px;">
+                        {% for error in field.errors %}
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-            <div class="modal-form-footer">
-                <button type="button" class="btn-secondary-modern" onclick="closeModal()">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <button type="submit" name="guardar_visitante" class="btn-modern">
-                    <i class="fas fa-save"></i> Guardar Visitante
-                </button>
-            </div>
-        </form>
+            {% endfor %}
+        </div>
+
+        <div class="modal-form-footer">
+            <button type="button" class="btn-secondary-modern" onclick="closeModal()">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button type="submit" name="guardar_visitante" class="btn-modern">
+                <i class="fas fa-save"></i> Guardar Visitante
+            </button>
+        </div>
+    </form>
+
     </div>
     {% endif %}
 

@@ -53,7 +53,13 @@ def register_view(request):
 
             if not re.match(r'^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$', apellidos):
                 errors["apellidos"] = "El apellido no debe tener números ni caracteres especiales."
-
+            
+            if not re.fullmatch(r"\d+", numero_documento):
+                 errors["numero_documento"] = "El número de documento solo puede contener números."
+                 
+            
+            if not re.fullmatch(r"[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", correo):
+                errors["correo"] = "Correo inválido. Pusistes caracteres no validos."
             # VALIDACIÓN: documento único
             if Usuario.objects.filter(numero_documento=numero_documento).exists():
                 errors["numero_documento"] = "Este número de documento ya está registrado."
@@ -336,9 +342,10 @@ def perfil_usuario(request):
 
     vehiculo = VehiculoResidente.objects.filter(cod_usuario=usuario).first()
     form_usuario = UsuarioUpdateForm(instance=usuario)
-    form_vehiculo = VehiculoResidenteForm(instance=vehiculo)  # Inicializamos por defecto
+    form_vehiculo = VehiculoResidenteForm(instance=vehiculo)
 
     if request.method == 'POST':
+        # ------------------- VEHICULO -------------------
         if 'vehiculo_submit' in request.POST:
             tipo_nuevo = request.POST.get('tipo_vehiculo')
             placa_nueva_raw = request.POST.get('placa', '').upper().strip().replace('-', '').replace(' ', '')
@@ -363,12 +370,39 @@ def perfil_usuario(request):
             else:
                 messages.error(request, "Error en el formulario de vehículo. Verifique los datos ingresados.")
 
+        # ------------------- USUARIO -------------------
         elif 'usuario_submit' in request.POST:
-            form_usuario = UsuarioUpdateForm(request.POST, instance=usuario)
-            if form_usuario.is_valid():
-                form_usuario.save()
-                messages.success(request, "Datos actualizados correctamente.")
-                return redirect('perfil_usuario')
+            correo = request.POST.get('correo', '').strip()
+            celular = request.POST.get('celular', '').strip()
+            telefono = request.POST.get('telefono', '').strip()
+            errores = False
+
+            # Validación correo
+            if not re.match(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$', correo):
+                messages.error(request, "Correo inválido. Solo se permiten caracteres válidos de correo.")
+                errores = True
+            elif Usuario.objects.exclude(pk=usuario.pk).filter(correo=correo).exists():
+                messages.error(request, "Este correo ya está registrado.")
+                errores = True
+
+            # Validación celular
+            if celular and not celular.isdigit():
+                messages.error(request, "El celular solo puede contener números.")
+                errores = True
+
+            # Validación teléfono
+            if telefono and not telefono.isdigit():
+                messages.error(request, "El teléfono solo puede contener números.")
+                errores = True
+
+            if not errores:
+                form_usuario = UsuarioUpdateForm(request.POST, instance=usuario)
+                if form_usuario.is_valid():
+                    form_usuario.save()
+                    messages.success(request, "Datos actualizados correctamente.")
+                    return redirect('perfil_usuario')
+                else:
+                    messages.error(request, "Error en el formulario. Verifique los datos ingresados.")
 
     # Actualizamos el vehículo para el template después del POST
     vehiculo = VehiculoResidente.objects.filter(cod_usuario=usuario).first()

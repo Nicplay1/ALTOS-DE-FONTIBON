@@ -43,5 +43,5 @@ document.addEventListener("DOMContentLoaded", () => {
             el.classList.remove('show');
             setTimeout(() => el.remove(), 300);
         });
-    }, 4000);
+    }, 5000);
 });

@@ -49,9 +49,11 @@
     <nav id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-img">
-                    <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
-                </div>
+                <a href="{% url 'index' %}">
+                        <div class="logo-img">
+                            <img src="{% static 'img/Logo Fontibon.png' %}" alt="Logo">
+                        </div>
+                    </a>
                 <div class="logo-text">Panel Vigilante</div>
             </div>
         </div>
@@ -105,10 +107,11 @@
 
         <div class="content-body">
             <!-- Botones de acción -->
-            <div class="action-buttons">
+            <div class="d-flex justify-content-center gap-3 my-3">
                 <button class="btn-modern" onclick="mostrarFormulario('paquete')">
                     <i class="fas fa-box"></i> Registrar Daño de Paquete
                 </button>
+
                 <button class="btn-modern" onclick="mostrarFormulario('visitante')">
                     <i class="fas fa-car"></i> Registrar Daño de Vehículo
                 </button>

@@ -626,6 +626,27 @@ body {
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
+
+.modal-header-alerta {
+    display: flex;
+    flex-direction: column; /* Ícono encima del texto */
+    align-items: center;    /* Centrado horizontal */
+    justify-content: center; /* Centrado vertical */
+    text-align: center;
+    width: 100%;
+    padding: 20px 10px;
+}
+
+.icon-alert {
+    font-size: 50px; /* tamaño del ícono */
+    margin-bottom: 10px;
+}
+
+.modal-title-alerta {
+    font-size: 24px;
+    font-weight: bold;
+}
+
 .icon-alert {
     font-size: 4rem;
     color: var(--accent-green);
