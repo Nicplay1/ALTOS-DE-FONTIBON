@@ -54,16 +54,16 @@ document.addEventListener("DOMContentLoaded", function () {
         locale: "es",
         height: 600,
         events: function(fetchInfo, successCallback, failureCallback) {
-            fetch("{% url 'fechas_ocupadas' zona.id_zona %}")
-            .then(response => response.json())
-            .then(data => {
-                let events = data.fechas.map(fecha => ({
-                    title: "Ocupado",
-                    start: fecha,
-                    color: "red"
-                }));
-                successCallback(events);
-            });
+            fetch(URL_FECHAS_OCUPADAS)
+                        .then(response => response.json())
+                        .then(data => {
+                            let events = data.fechas.map(fecha => ({
+                                title: "Ocupado",
+                                start: fecha,
+                                color: "red"
+                            }));
+                            successCallback(events);
+                        });
         },
         dateClick: function(info) {
             let fecha = info.dateStr;
