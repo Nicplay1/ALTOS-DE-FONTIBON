@@ -158,11 +158,15 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # 📧 CONFIGURACIÓN DE CORREO PRODUCCION
 # ---------------------------------------
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
-EMAIL_HOST = "smtp.sendgrid.net"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "apikey"  # ⚠️ siempre "apikey"
-EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_API_KEY")  # tu clave real
+
+# Tu API Key de SendGrid (desde variables de entorno)
+SENDGRID_API_KEY = os.getenv("EMAIL_HOST_PASSWORD")
+
+# Opciones de depuración (opcional)
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+SENDGRID_ECHO_TO_STDOUT = True
+
+# Correo por defecto
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
 
 
