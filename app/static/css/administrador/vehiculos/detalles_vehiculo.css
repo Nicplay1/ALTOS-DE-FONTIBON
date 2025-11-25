@@ -265,20 +265,20 @@ body {
     transform: scale(1.05);
 }
 
-/* Estilos específicos para las cards */
+/* MODIFICADO: Estilos específicos para las cards - CON HOVER DE ZOOM */
 .info-card {
     border-radius: 16px;
     box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
     border: 2px solid transparent;
     overflow: hidden;
     margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Agregamos transición para el hover */
 }
 
+/* AGREGADO: Hover de zoom para las cards */
 .info-card:hover {
-    transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--accent-green);
+    transform: scale(1.02); /* Efecto de zoom suave */
+    box-shadow: var(--shadow-lg); /* Sombra más pronunciada en hover */
 }
 
 .card-header {
@@ -560,7 +560,7 @@ body {
     }
 }
 
-/* Estilos para la tabla SIN SOMBRA */
+/* Estilos para la tabla SIN SOMBRA Y SIN LÍNEAS DE SEPARACIÓN */
 .table-container {
     border-radius: 0;
     box-shadow: none;
@@ -580,12 +580,12 @@ body {
     border-bottom: 2px solid var(--border);
 }
 
-/* Celdas de tabla */
+/* Celdas de tabla SIN LÍNEAS DE SEPARACIÓN */
 .table-hover td {
     padding: 14px 20px;
     font-size: 1rem;
     vertical-align: middle;
-    border-bottom: 1px solid var(--border);
+    border-bottom: none; /* Eliminamos las líneas de separación */
 }
 
 /* Switch personalizado - MÁS PEQUEÑO */
@@ -604,14 +604,14 @@ body {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
 }
 
-/* Contenedor para checkbox y botón - COMPACTO */
+/* Contenedor para checkbox y botón - COMPACTO Y UNIFICADO */
 .document-status-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background-color: #f8f9fa;
-    border-top: 1px solid var(--border);
+    background-color: white; /* Mismo color que la tabla */
+    border-top: none; /* Eliminamos la línea de separación */
 }
 
 .switch-container {

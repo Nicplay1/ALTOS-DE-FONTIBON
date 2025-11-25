@@ -4,7 +4,6 @@
     <table class="table table-hover align-middle">
         <thead class="table-header-gradient">
             <tr>
-                <th>#</th>
                 <th>Placa</th>
                 <th>Tipo</th>
                 <th>Activo</th>
@@ -17,7 +16,6 @@
         <tbody>
             {% for vehiculo in vehiculos %}
             <tr>
-                <td>{{ forloop.counter }}</td>
                 <td>{{ vehiculo.placa }}</td>
                 <td>{{ vehiculo.tipo_vehiculo }}</td>
                 <td>

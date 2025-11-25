@@ -483,3 +483,51 @@ body {
 .sidebar-overlay.active {
     display: block;
 }
+
+.card-modern {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transición suave para todos los cambios */
+    cursor: pointer; /* Cambia el cursor para indicar que es interactivo */
+}
+
+.card-modern:hover {
+    transform: scale(1.02); /* Aumenta ligeramente el tamaño */
+    box-shadow: var(--shadow-lg); /* Sombra más pronunciada */
+    z-index: 10; /* Asegura que la card en hover se muestre sobre las demás */
+}
+
+/* Asegurar que el contenido interno también se escale correctamente */
+.card-modern .card-header,
+.card-modern .card-body {
+    transition: transform 0.3s ease; /* Transición suave para el contenido interno */
+}
+
+/* Efecto sutil en los elementos de lista dentro de las cards */
+.list-item {
+    transition: all 0.2s ease;
+}
+
+.card-modern:hover .list-item {
+    transform: translateZ(0); /* Mejora el rendimiento de la transformación */
+}
+
+/* Efecto adicional para las cards vacías */
+.empty-state {
+    transition: all 0.3s ease;
+}
+
+.card-modern:hover .empty-state {
+    transform: scale(1.05);
+}
+
+/* Para asegurar que el efecto funcione correctamente en dispositivos móviles */
+@media (max-width: 768px) {
+    .card-modern:hover {
+        transform: scale(1.01); /* Efecto más sutil en móviles */
+    }
+}

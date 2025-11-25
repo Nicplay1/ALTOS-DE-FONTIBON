@@ -1,5 +1,29 @@
-<div class="container">
+<div class="cards-grid">
     <!-- Card 1: Información de la Reserva -->
+    
+    
+     <div class="card card-hover">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                <i class="fas fa-info-circle me-2"></i>Información de la Reserva
+            </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="list-group list-group-flush">
+                        <li>Dirígete al siguiente link: <a href="https://www.example.com" target="_blank" class="btn-modern btn-sm">Pagar aquí</a></li>
+                        <li>Ingresa el valor a pagar (puede ser total o parcial). / El total a pagar es: ${{ reserva.valor_pago|floatformat:2 }}</li>
+                        <li>Tómale pantallazo o foto al comprobante.</li>
+                        <li>Dale al botón de <strong>Agregar Comprobante</strong>.</li>
+                    </ol>
+                    
+                    <div class="alert-modern alert-info">
+                        <i class="fas fa-lightbulb"></i>
+                        <div><strong>Nota:</strong> Los pagos serán validados por el administrador del conjunto.</div>
+                    </div>
+                </div>
+            </div>  
+    
+    
     <div class="card card-hover">
         <div class="card-header">
             <h5 class="card-title mb-0">
@@ -50,49 +74,12 @@
                 </li>
 
                 <li class="list-group-item d-flex align-items-center">
-                    <i class="fas fa-tag me-3 icon-list"></i>
-                    <div>
-                        <strong>Estado:</strong>
-                        {% if reserva.estado == "Aprobada" %}
-                            <span class="estado-aprobado ms-2">
-                                <i class="fas fa-check-circle me-1"></i>{{ reserva.estado }}
-                            </span>
-                        {% elif reserva.estado == "Rechazada" %}
-                            <span class="estado-rechazado ms-2">
-                                <i class="fas fa-times-circle me-1"></i>{{ reserva.estado }}
-                            </span>
-                        {% elif reserva.estado == "En espera" %}
-                            <span class="estado-en-espera ms-2">
-                                <i class="fas fa-clock me-1"></i>{{ reserva.estado }}
-                            </span>
-                        {% endif %}
-                    </div>
-                </li>
-
-                <li class="list-group-item d-flex align-items-center">
-                    <i class="fas fa-comment me-3 icon-list"></i>
-                    <div>
-                        <strong>Observación:</strong>
-                        {{ reserva.observacion }}
-                    </div>
-                </li>
-
-                <li class="list-group-item d-flex align-items-center">
                     <i class="fas fa-credit-card me-3 icon-list"></i>
                     <div>
                         <strong>Forma de pago:</strong>
                         {{ reserva.forma_pago }}
                     </div>
                 </li>
-
-                <li class="list-group-item d-flex align-items-center">
-                    <i class="fas fa-money-bill me-3 icon-list"></i>
-                    <div>
-                        <strong>Valor pago:</strong>
-                        {{ reserva.valor_pago }}
-                    </div>
-                </li>
-
             </ul>
         </div>
     </div>
@@ -135,7 +122,7 @@
     <div class="card card-hover">
         <div class="card-header">
             <h5 class="card-title mb-0">
-                <i class="fas fa-file me-2"></i>Archivos de Pago
+                <i class="fas fa-file me-2"></i>Pagos 
             </h5>
         </div>
 
@@ -144,7 +131,7 @@
             <!-- ARCHIVO 1 -->
             <div class="mb-4">
                 <label class="form-label fw-bold">
-                    <i class="fas fa-file-upload me-2"></i>Archivo 1
+                    <i class="fas fa-file-upload me-2"></i>Agregar Primer Comprobante
                 </label>
 
                 {% if pago.archivo_1 %}
@@ -174,7 +161,7 @@
             <!-- ARCHIVO 2 -->
             <div class="mb-4">
                 <label class="form-label fw-bold">
-                    <i class="fas fa-file-upload me-2"></i>Archivo 2
+                    <i class="fas fa-file-upload me-2"></i>Agregar Segundo Comprobante
                 </label>
 
                 {% if pago.archivo_2 %}
@@ -208,7 +195,6 @@
                     <i class="fas fa-save me-1"></i> Guardar Cambios
                 </button>
             </form>
-
         </div>
     </div>
 </div>

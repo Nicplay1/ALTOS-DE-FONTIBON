@@ -1,16 +1,16 @@
 {% for pago in pagos %}
-    <div class="mb-3 p-3 border rounded info-card">
-        <p class="mb-2"><strong>Archivos:</strong></p>
+    <div class="pago-container">
+        <p class="mb-2"><strong>Comprobantes de Pagos :</strong></p>
         <div class="d-flex gap-2 mb-3">
             {% if pago.archivo_1 %}
                 <a href="{{ pago.archivo_1.url }}" target="_blank" class="btn btn-file">
-                    <i class="fas fa-eye me-1"></i> Ver Archivo 1
+                    <i class="fas fa-eye me-1"></i> Primer Comprobante
                 </a>
             {% endif %}
 
             {% if pago.archivo_2 %}
                 <a href="{{ pago.archivo_2.url }}" target="_blank" class="btn btn-file">
-                    <i class="fas fa-eye me-1"></i> Ver Archivo 2
+                    <i class="fas fa-eye me-1"></i> Segundo Comprobante
                 </a>
             {% endif %}
 

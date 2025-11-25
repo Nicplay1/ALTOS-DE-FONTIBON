@@ -265,7 +265,47 @@ body {
     transform: scale(1.05);
 }
 
-/* Estilos específicos del código 2 */
+/* MODIFICADO: Grid para cards en columna con mismo ancho */
+.cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+/* Cards con mismo tamaño y hover sin borde verde */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 100%; /* Todas las cards ocupan el 100% del ancho */
+    display: flex;
+    flex-direction: column;
+}
+
+.card-hover:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    /* Se eliminó border-color para quitar el borde verde */
+}
+
+.card-header {
+    border-radius: 16px 16px 0 0 !important;
+    background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent-green) 100%);
+    color: white;
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+    flex-grow: 1; /* Permite que el card-body ocupe el espacio restante */
+    display: flex;
+    flex-direction: column;
+}
+
 /* Estados de pago - MÁS INTENSOS Y LETRA BLANCA - CON BORDES MÁS REDONDOS */
 .estado-aprobado, 
 .estado-rechazado, 
@@ -303,33 +343,6 @@ body {
     filter: brightness(1.1);
 }
 
-/* Cards con hover y sombra */
-.card-hover {
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
-    border: 2px solid transparent;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    margin-bottom: 2rem;
-}
-
-.card-hover:hover {
-    transform: scale(1.03);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-    border-color: var(--accent-green);
-}
-
-.card-header {
-    border-radius: 16px 16px 0 0 !important;
-    background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent-green) 100%);
-    color: white;
-    font-weight: 600;
-    padding: 1.25rem 1.5rem;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
 /* Botón verde para ver archivos */
 .btn-ver-archivo {
     background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-light) 100%);
@@ -363,6 +376,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    margin-top: auto; /* Empuja el botón hacia abajo en el card */
 }
 
 .btn-guardar:hover {
@@ -748,4 +762,62 @@ body {
     display: flex;
     justify-content: center;
     gap: 1rem;
+}
+
+/* NUEVO: Estilos para la card de instrucciones */
+.card-modern {
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin: 2rem;
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-modern:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.card-modern .card-header {
+    background: linear-gradient(135deg, var(--primary-medium) 0%, var(--accent-green) 100%);
+    color: white;
+    font-weight: 600;
+    padding: 1.25rem 1.5rem;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+}
+
+.card-modern .card-body {
+    padding: 1.5rem;
+}
+
+.instruction-list {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.instruction-list li {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.btn-modern {
+    background: linear-gradient(135deg, var(--accent-green) 0%, var(--primary-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-modern:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    color: white;
 }

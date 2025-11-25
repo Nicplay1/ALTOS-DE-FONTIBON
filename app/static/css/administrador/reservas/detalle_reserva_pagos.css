@@ -265,20 +265,32 @@ body {
     transform: scale(1.05);
 }
 
-/* Estilos específicos para las cards */
+/* MODIFICADO: Cards en columna */
+.row {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.col-md-6, .col-12 {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Estilos específicos para las cards - SOLO ZOOM SIN BORDE */
 .info-card {
     border-radius: 16px;
     box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 2px solid transparent;
     overflow: hidden;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0;
 }
 
 .info-card:hover {
     transform: scale(1.02);
     box-shadow: var(--shadow-lg);
-    border-color: var(--accent-green);
+    /* Se eliminó border-color para quitar el borde verde */
 }
 
 .card-header {
@@ -336,19 +348,42 @@ body {
     color: white;
 }
 
-/* Lista con iconos */
+/* MODIFICADO: Lista con iconos SIN BORDES */
 .list-with-icons .list-group-item {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 1rem 1.25rem;
-    border: 1px solid var(--border);
+    border: none; /* Eliminamos los bordes */
+    border-bottom: 1px solid var(--border); /* Solo línea inferior sutil */
+}
+
+.list-with-icons .list-group-item:last-child {
+    border-bottom: none; /* Eliminar borde del último elemento */
 }
 
 .list-with-icons .list-group-item i {
     color: var(--accent-green);
     width: 20px;
     text-align: center;
+}
+
+/* NUEVO: Estilo para contenedor de pagos SIN HOVER */
+.pago-container {
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    /* Sin transición, sin sombra, sin zoom */
+    transition: none;
+    box-shadow: none;
+}
+
+.pago-container:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
 }
 
 /* Alertas mejoradas */
