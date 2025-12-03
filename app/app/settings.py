@@ -8,12 +8,12 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-pf7lx3f(rk7&qqs33&(#sfgg2-_d=g9f9g=bfw2e5gr59vhnrt'
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['prueba-final-6586.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['altos-de-fontibon.onrender.com', 'localhost', '127.0.0.1']
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://prueba-final-6586.onrender.com",
+    "https://altos-de-fontibon.onrender.com",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
@@ -200,5 +200,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS", 
-    "https://prueba-final-6586.onrender.com,http://127.0.0.1:8000,http://localhost:8000"
+    "https://altos-de-fontibon.onrender.com,http://127.0.0.1:8000,http://localhost:8000"
 ).split(",")

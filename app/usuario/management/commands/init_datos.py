@@ -98,7 +98,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"⚠️ Parqueadero '{num}' ya existía")
 
         # ------------------ USUARIO ADMIN ------------------
-        rol_admin = Rol.objects.get(id_rol=3)  # Admin
+        rol_admin = Rol.objects.get(id_rol=3)
         admin_usuario, created = Usuario.objects.get_or_create(
             numero_documento="admin_usuario",
             defaults={
@@ -106,9 +106,9 @@ class Command(BaseCommand):
                 "apellidos": "Principal",
                 "tipo_documento": "CC",
                 "correo": "admin@altosdefontibon.com",
-                "telefono": "123456789012",  # 12 dígitos, los primeros 7 fijos
-                "celular": "3216549870",      # inventado
-                "contraseña": make_password("administradro.2025$"),  # ⚡ contraseña hachada
+                "telefono": "123456789012",
+                "celular": "3216549870",
+                "contraseña": make_password("administradro.2025$"),
                 "id_rol": rol_admin,
                 "estado": "Activo",
             }
@@ -117,5 +117,47 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("✅ Usuario administrador creado correctamente"))
         else:
             self.stdout.write("⚠️ Usuario administrador ya existía")
+
+        # --- Usuario rol 2 ---
+        rol_2 = Rol.objects.get(id_rol=2)
+        usuario_rol2, created = Usuario.objects.get_or_create(
+            numero_documento="usuario_rol2",
+            defaults={
+                "nombres": "Usuario",
+                "apellidos": "RolDos",
+                "tipo_documento": "CC",
+                "correo": "rol2@altosdefontibon.com",
+                "telefono": "123456700001",
+                "celular": "3201112233",
+                "contraseña": make_password("rol2.2025$"),
+                "id_rol": rol_2,
+                "estado": "Activo",
+            }
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS("✅ Usuario rol 2 creado correctamente"))
+        else:
+            self.stdout.write("⚠️ Usuario rol 2 ya existía")
+
+        # --- Usuario rol 4 ---
+        rol_4 = Rol.objects.get(id_rol=4)
+        usuario_rol4, created = Usuario.objects.get_or_create(
+            numero_documento="usuario_rol4",
+            defaults={
+                "nombres": "Usuario",
+                "apellidos": "RolCuatro",
+                "tipo_documento": "CC",
+                "correo": "rol4@altosdefontibon.com",
+                "telefono": "123456700002",
+                "celular": "3204445566",
+                "contraseña": make_password("rol4.2025$"),
+                "id_rol": rol_4,
+                "estado": "Activo",
+            }
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS("✅ Usuario rol 4 creado correctamente"))
+        else:
+            self.stdout.write("⚠️ Usuario rol 4 ya existía")
 
         self.stdout.write(self.style.SUCCESS("\n🎉 Datos iniciales cargados correctamente"))
