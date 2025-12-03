@@ -1,34 +1,21 @@
 #!/usr/bin/env bash
-set -o errexit  # Detener el script si ocurre algún error
+#!/usr/bin/env bash
+set -o errexit
+
 echo "🚀 Instalando dependencias..."
 pip install -r requirements.txt
-echo "⚙️ Limpiando base de datos..."
 
-# Deshacer todas las migraciones de tus apps para partir desde cero
-python manage.py migrate usuario zero --noinput || true
-python manage.py migrate vigilante zero --noinput || true
-python manage.py migrate residente zero --noinput || true
-python manage.py migrate administrador zero --noinput || true
+echo "📂 Recolectando archivos estáticos..."
+python manage.py collectstatic --noinput
 
-# Deshacer migraciones de apps internas de Django para forzar recreación
-python manage.py migrate admin zero --noinput || true
-python manage.py migrate auth zero --noinput || true
-python manage.py migrate contenttypes zero --noinput || true
-python manage.py migrate sessions zero --noinput || true
-echo "🧹 Eliminando todos los datos existentes..."
-
-# Limpia todos los datos de la base de datos, respetando las migraciones
-python manage.py flush --no-input || true
-echo "🧩 Aplicando migraciones desde cero..."
-
-# Aplica todas las migraciones para crear tablas y columnas nuevas
+echo "📦 Aplicando migraciones..."
 python manage.py migrate --noinput
-echo "📦 Creando datos iniciales..."
 
+echo "📦 Cargando datos iniciales..."
+python manage.py init_datos || true
 
-# Ejecuta el comando personalizado que carga roles, zonas, tipos de archivo, parqueaderos y admin
-python manage.py init_datos
-echo "✅ Migraciones aplicadas y base de datos limpia."
+echo "✅ Deploy completado."
+
 
 
 

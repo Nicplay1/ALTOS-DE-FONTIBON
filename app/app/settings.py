@@ -4,6 +4,7 @@ Django settings for app project.
 
 from pathlib import Path
 import os
+import pymysql
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,7 +18,6 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
-
 
 # ---------------------------------------
 # 🧩 APLICACIONES
@@ -39,11 +39,11 @@ INSTALLED_APPS = [
 ]
 
 # ---------------------------------------
-# ⚙️ MIDDLEWARE (se agregó Whitenoise)
+# ⚙️ MIDDLEWARE
 # ---------------------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Debe ir justo aquí
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # OK
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,7 +72,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app.wsgi.application'
 
-# Channels
+# ------------------------
+# Channels (WebSockets)
+# ------------------------
 ASGI_APPLICATION = "app.asgi.application"
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -85,30 +87,29 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
 # ---------------------------------------
-# 🗄️ BASE DE DATOS (Render PostgreSQL)
+# 🗄️ BASE DE DATOS
 # ---------------------------------------
-import pymysql
 pymysql.install_as_MySQLdb()
 
-# Opción: cambiar 'default_db' a 'mysql' o 'postgres' según la base que quieras usar
 default_db = 'postgres'  # 'mysql' o 'postgres'
 
 if default_db == 'mysql':
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'proyecto_bd',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'proyecto_bd',
+            'USER': 'root',
+            'PASSWORD': '',
+            'HOST': 'localhost',
+            'PORT': '3306',
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            }
         }
     }
-}
 elif default_db == 'postgres':
     DATABASES = {
         'default': {
@@ -118,11 +119,10 @@ elif default_db == 'postgres':
             'PASSWORD': os.getenv('DB_PASSWORD'),
             'HOST': os.getenv('DB_HOST'),
             'PORT': os.getenv('DB_PORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require'
-            }
+            'OPTIONS': {'sslmode': 'require'}
         }
     }
+
 # ---------------------------------------
 # 🔐 VALIDACIÓN DE CONTRASEÑAS
 # ---------------------------------------
@@ -142,63 +142,50 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------------------------
-# 🎨 ARCHIVOS ESTÁTICOS Y MULTIMEDIA
+# 🎨 ESTÁTICOS Y MEDIA
 # ---------------------------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # ✅ requerido por Render
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ✅ Whitenoise (sirve estáticos comprimidos en Render)
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # ---------------------------------------
-# 📧 CONFIGURACIÓN DE CORREO PRODUCCION
+# 📧 CORREO PRODUCCIÓN (SendGrid)
 # ---------------------------------------
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 
-# Tu API Key de SendGrid (desde variables de entorno)
 SENDGRID_API_KEY = os.getenv("EMAIL_HOST_PASSWORD")
-
-# Opciones de depuración (opcional)
-SENDGRID_SANDBOX_MODE_IN_DEBUG = False
-SENDGRID_ECHO_TO_STDOUT = True
-
-# Correo por defecto
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "altosdefontibon.cr@gmail.com")
 
-
-# ---------------------------------------
-# 📧 CONFIGURACIÓN DE CORREO DESARRROLLO
-# ---------------------------------------
-# Configuración de Gmail para envío de correos
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#EMAIL_HOST = 'smtp.gmail.com'
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = True
-#EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
-#EMAIL_HOST_PASSWORD = 'heho zywq sayt pexm'
-#DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-# Opciones de depuración (opcional)
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 SENDGRID_ECHO_TO_STDOUT = True
 
-
-# 🟢 En Render, solo mostrar el correo en consola (no enviarlo)
+# ---------------------------------------
+# 📧 CORREO DESARROLLO (Gmail) — Comentado
+# ---------------------------------------
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'altosdefontibon.cr@gmail.com'
+# EMAIL_HOST_PASSWORD = 'heho zywq sayt pexm'
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ---------------------------------------
-# 🧱 CONFIG EXTRA
+# EXTRA
 # ---------------------------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", 
-    "https://altos-de-fontibon.onrender.com,http://127.0.0.1:8000,http://localhost:8000"
-).split(",")
+
+# Se respeta tu forma, pero solo se define una vez
+CSRF_TRUSTED_ORIGINS = [
+    "https://altos-de-fontibon.onrender.com",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
