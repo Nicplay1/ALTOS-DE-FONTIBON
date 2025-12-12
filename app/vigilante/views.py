@@ -409,45 +409,76 @@ def registro_correspondencia_view(request):
 @rol_requerido([4])
 @login_requerido
 def registrar_entrega_view(request):
-    if request.method == "POST":
-        # Registrar entrega
-        if request.POST.get("accion") == "registrar_entrega":
-            id_correspondencia = request.POST.get("id_correspondencia")
-            id_residente = request.POST.get("id_residente")
-            residente = get_object_or_404(DetalleResidente, id_detalle_residente=id_residente)
-            correspondencia = get_object_or_404(RegistroCorrespondencia, id_correspondencia=id_correspondencia)
+    # ============================================================
+    # REGISTRAR ENTREGA DE PAQUETE / RECIBO
+    # ============================================================
+    if request.method == "POST" and request.POST.get("accion") == "registrar_entrega":
 
-            if not EntregaCorrespondencia.objects.filter(id_detalle_residente=residente, id_correspondencia=correspondencia).exists():
-                EntregaCorrespondencia.objects.create(
-                    id_usuario=request.usuario,
-                    id_correspondencia=correspondencia,
-                    id_detalle_residente=residente,
-                    fecha_entrega=timezone.now()
-                )
-            return JsonResponse({'success': True})
+        id_corres = request.POST.get("id_correspondencia")
+        id_res = request.POST.get("id_residente")
 
-        # Filtrado AJAX
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            torre = request.POST.get("torre")
-            apartamento = request.POST.get("apartamento")
-            try:
-                residente = DetalleResidente.objects.get(torre=torre, apartamento=apartamento)
-            except DetalleResidente.DoesNotExist:
-                residente = None
+        residente = get_object_or_404(DetalleResidente, id_detalle_residente=id_res)
+        correspondencia = get_object_or_404(RegistroCorrespondencia, id_correspondencia=id_corres)
 
-            registros = []
-            if residente:
-                entregas_residente = EntregaCorrespondencia.objects.filter(id_detalle_residente=residente)
-                entregados_ids = entregas_residente.values_list('id_correspondencia_id', flat=True)
-                registros = RegistroCorrespondencia.objects.exclude(id_correspondencia__in=entregados_ids)
+        # Evitar duplicados
+        if not EntregaCorrespondencia.objects.filter(
+            id_detalle_residente=residente,
+            id_correspondencia=correspondencia
+        ).exists():
 
-            html = render_to_string('vigilante/correspondecia/partial_registros.html', {
-                'registros': registros,
-                'residente': residente
+            EntregaCorrespondencia.objects.create(
+                id_usuario=request.usuario,
+                id_correspondencia=correspondencia,
+                id_detalle_residente=residente,
+                fecha_entrega=timezone.now()
+            )
+
+        return JsonResponse({"success": True})
+
+    # ============================================================
+    # FILTRADO AJAX: BUSCAR REGISTROS PENDIENTES
+    # ============================================================
+    if request.method == "POST" and request.headers.get("x-requested-with") == "XMLHttpRequest":
+
+        torre = request.POST.get("torre")
+        apartamento = request.POST.get("apartamento")
+
+        # Validación rápida
+        if not torre or not apartamento:
+            return JsonResponse({
+                "html": "<div class='alert alert-warning'>Debe seleccionar torre y apartamento.</div>"
             })
-            return JsonResponse({'html': html})
 
-    return JsonResponse({'success': False})
+        # Buscar residente
+        try:
+            residente = DetalleResidente.objects.get(torre=torre, apartamento=apartamento)
+        except DetalleResidente.DoesNotExist:
+            return JsonResponse({
+                "html": "<div class='alert alert-danger'>No se encontró un residente con esos datos.</div>"
+            })
+
+        # Obtener IDs de correspondencia ya entregada
+        entregados_ids = EntregaCorrespondencia.objects.filter(
+            id_detalle_residente=residente
+        ).values_list("id_correspondencia_id", flat=True)
+
+        # Registros sin entregar
+        registros = RegistroCorrespondencia.objects.exclude(
+            id_correspondencia__in=entregados_ids
+        )
+
+        # Render parcial corregido
+        html = render_to_string(
+            "vigilante/correspondecia/partial_registros.html",
+            {"registros": registros, "residente": residente}
+        )
+
+        return JsonResponse({"html": html})
+
+    # ============================================================
+    # Si llega aquí → petición inválida
+    # ============================================================
+    return JsonResponse({"success": False})
 
 
 @rol_requerido([4])
