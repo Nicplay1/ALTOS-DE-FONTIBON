@@ -2,78 +2,116 @@ from locust import HttpUser, task, between
 import re
 import random
 
-class LoginUser(HttpUser):
+class SistemaUser(HttpUser):
     wait_time = between(1, 3)
 
-    # Usuarios de prueba (reemplaza con tus datos reales)
     usuarios = [
-        {"numero_documento": "10000001", "contraseña": "12345", "rol": 2},  # Residente
-        {"numero_documento": "10000002", "contraseña": "12345", "rol": 3},  # Administrador
-        {"numero_documento": "10000003", "contraseña": "12345", "rol": 4},  # Vigilante
+        {"numero_documento": "10000002", "contraseña": "12345", "rol": 3},
     ]
 
-    def get_csrf_token(self):
-        """
-        Obtiene el token CSRF desde la cookie o desde el HTML de /login/
-        """
-        response = self.client.get("/login/", allow_redirects=True)
-        # Buscar csrftoken en cookies
-        if 'csrftoken' in response.cookies:
-            return response.cookies['csrftoken']
-        # Buscar en HTML
+    #
+    # ----------- UTILIDADES -----------
+    #
+
+    def get_csrf_token(self, url="/login/"):
+        """Obtiene token CSRF desde cookie o HTML."""
+        response = self.client.get(url, allow_redirects=True)
+
+        if "csrftoken" in response.cookies:
+            return response.cookies["csrftoken"]
+
         match = re.search(r'name="csrfmiddlewaretoken" value="(.+?)"', response.text)
         if match:
             return match.group(1)
+
         return None
 
-    @task(3)
-    def login_correcto(self):
-        """Simula login correcto con un usuario aleatorio"""
+    def login(self):
+        """Autenticación del usuario administrador."""
+        if hasattr(self, "logged_in") and self.logged_in:
+            return
+
         user = random.choice(self.usuarios)
         csrf_token = self.get_csrf_token()
-        headers = {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": csrf_token
-        }
-        response = self.client.post("/login/", data={
-            "numero_documento": user["numero_documento"],
-            "contraseña": user["contraseña"],
-            "csrfmiddlewaretoken": csrf_token
-        }, headers=headers)
-        if response.status_code == 200:
-            json_resp = response.json()
-            if not json_resp.get("success"):
-                print("Login correcto falló:", json_resp)
+
+        headers = {"X-CSRFToken": csrf_token}
+
+        response = self.client.post(
+            "/login/",
+            data={
+                "numero_documento": user["numero_documento"],
+                "contraseña": user["contraseña"],
+                "csrfmiddlewaretoken": csrf_token
+            },
+            headers=headers,
+            allow_redirects=True
+        )
+
+        if response.status_code in (200, 302):
+            self.logged_in = True
+        else:
+            print("❌ Error en login:", response.status_code, response.text)
+
+    #
+    # ---------- TAREAS SOBRE SORTEOS ----------
+    #
 
     @task(2)
-    def login_incorrecto(self):
-        """Simula login con datos incorrectos"""
-        csrf_token = self.get_csrf_token()
-        headers = {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": csrf_token
-        }
-        response = self.client.post("/login/", data={
-            "numero_documento": "99999999",
-            "contraseña": "wrongpass",
-            "csrfmiddlewaretoken": csrf_token
-        }, headers=headers)
-        if response.status_code == 200:
-            json_resp = response.json()
-            if json_resp.get("success"):
-                print("Login incorrecto pasó!")
+    def crear_sorteo(self):
+        """CREAR un sorteo automáticamente."""
+        self.login()
 
-    @task(1)
-    def login_bloqueado(self):
-        """Simula bloqueo por 5 intentos fallidos"""
-        csrf_token = self.get_csrf_token()
-        headers = {
-            "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": csrf_token
+        csrf = self.get_csrf_token("/administrador/sorteos/")
+
+        data = {
+            "nombre": f"Sorteo Locust {random.randint(1, 999)}",
+            "descripcion": "Sorteo generado por Locust",
+            "fecha_inicio": "2025-01-20",
+            "crear_sorteo": "1",
+            "csrfmiddlewaretoken": csrf
         }
-        for _ in range(6):  # 6 intentos para activar bloqueo
-            self.client.post("/login/", data={
-                "numero_documento": "99999999",
-                "contraseña": "wrongpass",
-                "csrfmiddlewaretoken": csrf_token
-            }, headers=headers)
+
+        headers = {"X-CSRFToken": csrf}
+
+        self.client.post(
+            "/administrador/sorteos/",
+            data=data,
+            headers=headers,
+            name="crear_sorteo",
+            allow_redirects=True
+        )
+
+    @task(3)
+    def ejecutar_sorteo(self):
+        """
+        Selecciona un sorteo aleatorio y ejecuta el sorteo de vehículos.
+        """
+        self.login()
+
+        # 1️⃣ obtener la lista de sorteos
+        lista = self.client.get("/administrador/sorteos/", name="listar_sorteos")
+        ids = re.findall(r'data-id="(\d+)"', lista.text)
+
+        if not ids:
+            return  # no hay sorteos creados
+
+        sorteo_id = random.choice(ids)
+
+        # 2️⃣ obtener token CSRF para la vista del sorteo
+        csrf = self.get_csrf_token(f"/administrador/sorteo/{sorteo_id}/vehiculos/")
+
+        data = {
+            "realizar_sorteo": "1",
+            "csrfmiddlewaretoken": csrf
+        }
+
+        headers = {"X-CSRFToken": csrf}
+
+        # 3️⃣ POST para ejecutar el sorteo
+        self.client.post(
+            f"/administrador/sorteo/{sorteo_id}/vehiculos/",
+            data=data,
+            headers=headers,
+            name="ejecutar_sorteo",
+            allow_redirects=True
+        )
