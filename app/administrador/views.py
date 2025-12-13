@@ -308,81 +308,46 @@ def finalizar_validacion(request):
 def sorteos_list_create(request):
     sorteos = Sorteo.objects.all().order_by('-fecha_creado')
 
-    if request.method == 'POST':
-        if 'crear_sorteo' in request.POST:
+    if request.method == "POST":
+        # ---- CREAR SORTEO ----
+        if "crear_sorteo" in request.POST:
             form = SorteoForm(request.POST)
             if form.is_valid():
-                form.save()
-                messages.success(request, " Sorteo creado correctamente.")
-                return redirect('sorteos_list_create')
+
+                fecha_sorteo = form.cleaned_data["fecha_inicio"]
+
+                # Validar fecha
+                if fecha_sorteo < timezone.now().date():
+                    messages.error(request, "No puedes crear un sorteo en una fecha pasada.")
+                else:
+                    form.save()
+                    messages.success(request, "Sorteo creado correctamente.")
+                    return redirect("sorteos_list_create")
+
             else:
-                # Mostrar los errores reales del formulario
                 for field, errors in form.errors.items():
                     for error in errors:
-                        messages.error(request, f" {error}")
+                        messages.error(request, f"{error}")
 
-        elif 'liberar_propietarios' in request.POST:
-            parqueaderos = Parqueadero.objects.filter(comunal=True, estado=True)
-            parqueaderos.update(estado=False)
-            messages.success(request, " Se liberaron todos los parqueaderos de propietarios.")
-
-        elif 'liberar_arrendatarios' in request.POST:
-            parqueaderos = Parqueadero.objects.filter(comunal=False, estado=True)
-            parqueaderos.update(estado=False)
-            messages.success(request, " Se liberaron todos los parqueaderos de arrendatarios.")
-
-        return redirect('sorteos_list_create')
-
-    else:
-        form = SorteoForm()
-
-    context = {
-        'sorteos': sorteos,
-        'form': form,
-    }
-    return render(request, 'administrador/sorteo/sorteos.html', context)
-  
-
-@rol_requerido([3])
-@login_requerido
-def sorteos_list_create(request):
-    sorteos = Sorteo.objects.all().order_by('-fecha_creado')
-
-    if 'crear_sorteo' in request.POST:
-        form = SorteoForm(request.POST)
-        if form.is_valid():
-            fecha_sorteo = form.cleaned_data['fecha_inicio']
-            # Validación en la vista
-            if fecha_sorteo < timezone.now().date():
-                messages.error(request, "No puedes crear un sorteo en una fecha pasada.")
-            else:
-                form.save()
-                messages.success(request, "Sorteo fue creado correctamente.")
-                return redirect('sorteos_list_create')
-
-        # Liberar parqueaderos propietarios
-        elif 'liberar_propietarios' in request.POST:
-            parqueaderos = Parqueadero.objects.filter(comunal=True, estado=True)
-            parqueaderos.update(estado=False)
+        # ---- LIBERAR PARQUEADEROS PROPIETARIOS ----
+        elif "liberar_propietarios" in request.POST:
+            Parqueadero.objects.filter(comunal=True, estado=True).update(estado=False)
             messages.success(request, "Se liberaron todos los parqueaderos de propietarios.")
 
-        # Liberar parqueaderos arrendatarios
-        elif 'liberar_arrendatarios' in request.POST:
-            parqueaderos = Parqueadero.objects.filter(comunal=False, estado=True)
-            parqueaderos.update(estado=False)
+        # ---- LIBERAR PARQUEADEROS ARRENDATARIOS ----
+        elif "liberar_arrendatarios" in request.POST:
+            Parqueadero.objects.filter(comunal=False, estado=True).update(estado=False)
             messages.success(request, "Se liberaron todos los parqueaderos de arrendatarios.")
 
-        return redirect('sorteos_list_create')
+        return redirect("sorteos_list_create")
 
-    else:
-        form = SorteoForm()
-
+    # GET request
+    form = SorteoForm()
     context = {
-        'sorteos': sorteos,
-        'form': form,
+        "sorteos": sorteos,
+        "form": form,
     }
-    return render(request, 'administrador/sorteo/sorteos.html', context)
-
+    return render(request, "administrador/sorteo/sorteos.html", context)
 
 
 @rol_requerido([3])
